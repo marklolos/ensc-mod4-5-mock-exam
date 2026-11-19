@@ -1,0 +1,2882 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ENSC 20123 • Modules 4 &amp; 5 Interactive Mock Exam</title>
+
+  <!-- Google Fonts: Inter (with system sans-serif fallback for 100% offline usability) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Configure Tailwind for class-based dark mode and Inter typography
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+          },
+          colors: {
+            hydro: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              200: '#99f6e4',
+              300: '#5eead4',
+              400: '#2dd4bf',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+              950: '#042f2e',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Subtle utility animations and scrollbar styling */
+    @keyframes popIn {
+      0% { transform: scale(0.95); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(8px); opacity: 0; }
+      20% { transform: translateY(0); opacity: 1; }
+      85% { transform: translateY(-10px); opacity: 1; }
+      100% { transform: translateY(-20px); opacity: 0; }
+    }
+    .animate-pop { animation: popIn 0.22s ease-out forwards; }
+    .animate-xp { animation: floatUp 1.8s ease-out forwards; }
+
+    /* Clean thin scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.45); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.7); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans antialiased min-h-screen transition-colors duration-200 selection:bg-teal-200 selection:text-teal-950 dark:selection:bg-teal-800 dark:selection:text-teal-50">
+
+  <!-- Full-screen Confetti Canvas (only animates during bursts) -->
+  <canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-50 w-full h-full"></canvas>
+
+  <!-- Floating XP Toast Container -->
+  <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ===================================================================== -->
+  <!-- TOP DASHBOARD HEADER                                                  -->
+  <!-- ===================================================================== -->
+  <header class="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3">
+      <!-- Top Row: Brand + Gamification HUD + Controls -->
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <!-- Brand / Title -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-600 to-emerald-600 flex items-center justify-center text-white shadow-md shrink-0">
+            <!-- Water Drop Engineering SVG -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-sm sm:text-base md:text-lg font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+              ENSC 20123 <span class="text-teal-600 dark:text-teal-400">&bull;</span> Modules 4 &amp; 5 Mock Exam
+            </h1>
+            <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
+              PUP Environmental Science &amp; Engineering &middot; Water &amp; Wastewater Management
+            </p>
+          </div>
+        </div>
+
+        <!-- Gamification HUD + Utility Buttons -->
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Rank Badge -->
+          <div id="hudRankBadge" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-xs font-bold text-teal-800 dark:text-teal-200" title="Your Engineer Rank based on Total XP">
+            <span id="hudRankIcon">💧</span>
+            <span id="hudRankTitle">Water Apprentice</span>
+          </div>
+
+          <!-- XP Pill -->
+          <div class="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-xs font-bold text-emerald-800 dark:text-emerald-200" title="Total Experience Points">
+            <span>⚡</span>
+            <span id="hudXP">0 XP</span>
+          </div>
+
+          <!-- Streak Pill -->
+          <div class="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-xs font-bold text-amber-800 dark:text-amber-200" title="Current Correct Answer Streak">
+            <span>🔥</span>
+            <span id="hudStreak">0</span>
+          </div>
+
+          <!-- Quick Module Reviewer Button -->
+          <button id="btnOpenReviewer" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white text-xs font-semibold shadow-sm transition active:scale-95">
+            <span>📖</span>
+            <span class="hidden sm:inline">Quick Reviewer</span>
+            <span class="sm:hidden">Notes</span>
+          </button>
+
+          <!-- Sound FX Toggle -->
+          <button id="btnToggleSound" type="button" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition active:scale-95" title="Toggle Sound Effects" aria-label="Toggle Sound Effects">
+            <span id="soundIcon" class="text-sm leading-none">🔊</span>
+          </button>
+
+          <!-- Light/Dark Theme Toggle -->
+          <button id="btnToggleTheme" type="button" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition active:scale-95" title="Toggle Light/Dark Mode" aria-label="Toggle Light/Dark Mode">
+            <span id="themeIcon" class="text-sm leading-none">🌙</span>
+          </button>
+
+          <!-- Mobile Navigator Trigger -->
+          <button id="btnOpenMobileNav" type="button" class="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-sm transition active:scale-95">
+            <span>🧭</span>
+            <span>Map</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Set Selector Tabs -->
+      <nav class="mt-3 flex items-center gap-1.5 overflow-x-auto pb-1 -mx-1 px-1" aria-label="Exam Set Selector">
+        <button data-set="A" class="set-tab shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition border">
+          Set A <span class="opacity-75 text-[11px]">(25 Qs)</span>
+        </button>
+        <button data-set="B" class="set-tab shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition border">
+          Set B <span class="opacity-75 text-[11px]">(25 Qs)</span>
+        </button>
+        <button data-set="C" class="set-tab shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition border">
+          Set C <span class="opacity-75 text-[11px]">(25 Qs)</span>
+        </button>
+        <button data-set="MIX" class="set-tab shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition border flex items-center gap-1.5">
+          <span>🎲</span> Random Mix <span class="opacity-75 text-[11px]">(25 Qs)</span>
+        </button>
+        <button data-set="DRILL" class="set-tab shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition border flex items-center gap-1.5">
+          <span>🎯</span> Missed Items Drill
+          <span id="drillCountBadge" class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-900/70 dark:text-rose-200">0</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN TWO-COLUMN EXAM LAYOUT                                           -->
+  <!-- ===================================================================== -->
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-5 sm:py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- ================================================================= -->
+      <!-- LEFT / MAIN COLUMN: EXAM CARD                                     -->
+      <!-- ================================================================= -->
+      <section class="lg:col-span-8 space-y-4">
+
+        <!-- Optional Banner for Random Mix or Missed Items Drill -->
+        <div id="specialModeBar" class="hidden rounded-2xl p-3.5 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-950/50 dark:to-emerald-950/50 border border-teal-200 dark:border-teal-800 flex flex-wrap items-center justify-between gap-3">
+          <div id="specialModeText" class="text-xs sm:text-sm font-medium text-teal-900 dark:text-teal-100"></div>
+          <button id="btnSpecialAction" type="button" class="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-sm transition active:scale-95"></button>
+        </div>
+
+        <!-- Empty State for Missed Items Drill when 0 items exist -->
+        <div id="emptyDrillState" class="hidden rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm p-8 sm:p-12 text-center animate-pop">
+          <div class="w-16 h-16 mx-auto rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-3xl mb-4">🏆</div>
+          <h2 class="text-xl font-extrabold text-slate-900 dark:text-white mb-2">Your Missed Items Drill is Empty!</h2>
+          <p class="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto mb-6">
+            Great job! Whenever you answer a question incorrectly (or click "Mark &amp; Add to Drill" after reviewing a module excerpt), it will automatically appear here for active recall practice.
+          </p>
+          <button id="btnBackToSetA" type="button" class="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold shadow-sm transition active:scale-95">
+            Go to Set A Mock Exam
+          </button>
+        </div>
+
+        <!-- Main Question Card -->
+        <div id="examCard" class="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+
+          <!-- Section Banner -->
+          <div id="sectionBanner" class="px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-800/70 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span id="sectionBadge" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-extrabold tracking-wide uppercase"></span>
+              <span id="sectionRuleText" class="text-xs font-semibold text-slate-600 dark:text-slate-300"></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="modulePageTag" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-teal-700 dark:text-teal-300"></span>
+            </div>
+          </div>
+
+          <!-- Card Body -->
+          <div class="p-5 sm:p-7">
+            <!-- Progress + Question Counter + Flag Indicator -->
+            <div class="flex items-center justify-between gap-2 mb-4">
+              <div class="flex items-center gap-2.5">
+                <span id="questionCounter" class="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Question 1 of 25
+                </span>
+                <span id="statusPill" class="hidden px-2 py-0.5 rounded-full text-[11px] font-bold"></span>
+              </div>
+              <button id="btnFlagQuestion" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 hover:bg-amber-50 hover:border-amber-300 dark:hover:bg-amber-950/40 dark:hover:border-amber-700 text-slate-600 dark:text-slate-300 transition active:scale-95">
+                <span id="flagIcon">🚩</span>
+                <span id="flagLabel">Flag / Skip for Later</span>
+              </button>
+            </div>
+
+            <!-- Question Prompt -->
+            <h2 id="questionText" class="text-base sm:text-lg md:text-xl font-bold text-slate-900 dark:text-white leading-relaxed mb-6"></h2>
+
+            <!-- Interactive Answer Area (Dynamically populated for T/F, Identification, or Enumeration) -->
+            <div id="answerArea" class="space-y-3"></div>
+
+            <!-- Action & Navigation Bar -->
+            <div class="mt-7 pt-5 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+              <button id="btnPrev" type="button" class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+                <span>&larr;</span> Previous
+              </button>
+
+              <div class="flex items-center gap-2.5 flex-1 sm:flex-initial justify-end">
+                <button id="btnCheck" type="button" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-sm font-extrabold shadow-md shadow-teal-600/20 transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+                  <span>✓</span> Check Answer
+                </button>
+
+                <button id="btnNext" type="button" class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 text-sm font-bold transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+                  Next <span>&rarr;</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Immediate Rich Feedback Panel -->
+            <div id="feedbackPanel" class="hidden mt-6 animate-pop"></div>
+          </div>
+        </div>
+
+        <!-- Keyboard Shortcut Hint (Desktop) -->
+        <p class="hidden sm:block text-center text-xs text-slate-400 dark:text-slate-500">
+          Tip: Use <kbd class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono text-[11px]">&larr;</kbd> / <kbd class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono text-[11px]">&rarr;</kbd> arrow keys to navigate questions, or press <kbd class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono text-[11px]">Enter</kbd> to advance &amp; submit enumerations.
+        </p>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- RIGHT SIDEBAR (DESKTOP) / SLIDE-OVER DRAWER (MOBILE)              -->
+      <!-- ================================================================= -->
+      <!-- Mobile Backdrop -->
+      <div id="mobileNavBackdrop" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 lg:hidden"></div>
+
+      <aside id="navigatorSidebar" class="fixed lg:static inset-y-0 right-0 z-50 lg:z-auto w-80 max-w-[90vw] lg:w-auto lg:col-span-4 bg-slate-50 lg:bg-transparent dark:bg-slate-950 lg:dark:bg-transparent p-4 lg:p-0 overflow-y-auto transform translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out space-y-4">
+
+        <!-- Mobile Close Header -->
+        <div class="flex lg:hidden items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+          <h2 class="text-sm font-extrabold text-slate-900 dark:text-white">Question Navigator &amp; Score</h2>
+          <button id="btnCloseMobileNav" type="button" class="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold">✕ Close</button>
+        </div>
+
+        <!-- Live Scoreboard Card -->
+        <div class="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span>📊</span> Live Scoreboard
+            </h3>
+            <span id="scorePercentBadge" class="px-2.5 py-1 rounded-xl bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 text-xs font-extrabold border border-teal-200 dark:border-teal-800">
+              0%
+            </span>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="w-full h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden mb-4">
+            <div id="progressBarFill" class="h-full rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 transition-all duration-300" style="width: 0%"></div>
+          </div>
+
+          <!-- Breakdown Rows -->
+          <div class="space-y-2 text-xs">
+            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+              <div>
+                <span class="font-bold text-slate-700 dark:text-slate-200 block">Part I: T/F (RMW)</span>
+                <span id="scorePart1Detail" class="text-[11px] text-slate-500 dark:text-slate-400">0R &minus; 0W = 0 pts (0 skipped)</span>
+              </div>
+              <span id="scorePart1Net" class="font-extrabold text-sm text-slate-900 dark:text-white">0 / 10</span>
+            </div>
+
+            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+              <span class="font-bold text-slate-700 dark:text-slate-200">Part II: Identification</span>
+              <span id="scorePart2" class="font-extrabold text-sm text-slate-900 dark:text-white">0 / 10</span>
+            </div>
+
+            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+              <span class="font-bold text-slate-700 dark:text-slate-200">Part III: Enumeration</span>
+              <span id="scorePart3" class="font-extrabold text-sm text-slate-900 dark:text-white">0 / 18</span>
+            </div>
+
+            <div class="flex items-center justify-between p-3 rounded-xl bg-teal-50/80 dark:bg-teal-950/50 border border-teal-200 dark:border-teal-800">
+              <span class="font-extrabold text-teal-900 dark:text-teal-100">Overall Score</span>
+              <span id="scoreOverall" class="font-extrabold text-base text-teal-700 dark:text-teal-300">0 / 38</span>
+            </div>
+          </div>
+
+          <!-- Report & Reset Buttons -->
+          <div class="mt-4 grid grid-cols-1 gap-2">
+            <button id="btnOpenReport" type="button" class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white text-xs font-extrabold shadow-sm transition active:scale-95">
+              📈 Finish &amp; View Full Diagnostic Report
+            </button>
+            <button id="btnResetSet" type="button" class="w-full py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 dark:hover:bg-rose-950/40 dark:hover:text-rose-300 dark:hover:border-rose-800 text-slate-600 dark:text-slate-400 text-xs font-bold transition active:scale-95">
+              ↺ Reset Current Set
+            </button>
+          </div>
+        </div>
+
+        <!-- Question Navigator Grid Card -->
+        <div class="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span>🧭</span> Question Navigator
+            </h3>
+            <span id="answeredCountLabel" class="text-[11px] font-bold text-slate-500 dark:text-slate-400">0 / 25 checked</span>
+          </div>
+
+          <!-- Grouped Clickable Number Buttons -->
+          <div id="navigatorGridContainer" class="space-y-4"></div>
+
+          <!-- Color Legend -->
+          <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-2 gap-x-2 gap-y-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span> Correct</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-rose-500 inline-block"></span> Incorrect (📖)</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-orange-500 inline-block"></span> Partial</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-400 inline-block"></span> Skipped / Flag</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded border-2 border-teal-500 bg-teal-50 dark:bg-teal-950 inline-block"></span> Current</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-slate-200 dark:bg-slate-700 inline-block"></span> Unanswered</div>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 1: QUICK MODULE 4 & 5 REVIEWER DRAWER                           -->
+  <!-- ===================================================================== -->
+  <div id="reviewerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-sm">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-pop">
+      <!-- Header -->
+      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 bg-gradient-to-r from-teal-700 to-emerald-700 text-white">
+        <div>
+          <h2 class="text-base sm:text-lg font-extrabold flex items-center gap-2">
+            <span>📖</span> Module 4 &amp; 5 Quick Reviewer
+          </h2>
+          <p class="text-xs text-teal-100">PUP ENSC 20123 Learning Module Reference (Pages 43–62)</p>
+        </div>
+        <button id="btnCloseReviewer" type="button" class="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition">✕ Close</button>
+      </div>
+
+      <!-- Search & Filter Bar -->
+      <div class="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex flex-wrap items-center gap-2.5">
+        <div class="relative flex-1 min-w-[200px]">
+          <input id="reviewerSearch" type="text" placeholder="Search keywords (e.g., Angat, RA 8041, Orangeburg, 4000 MLD, ORP, alum)..." class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500" />
+          <span class="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button data-ref-tab="all" class="ref-tab px-3 py-2 rounded-xl text-xs font-bold bg-teal-600 text-white">All</button>
+          <button data-ref-tab="4" class="ref-tab px-3 py-2 rounded-xl text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">Module 4 (pp. 43–54)</button>
+          <button data-ref-tab="5" class="ref-tab px-3 py-2 rounded-xl text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">Module 5 (pp. 55–62)</button>
+        </div>
+      </div>
+
+      <!-- Scrollable Reviewer Cards -->
+      <div id="reviewerContent" class="p-5 overflow-y-auto space-y-4 text-sm"></div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 2: DIAGNOSTIC REPORT & BADGES                                   -->
+  <!-- ===================================================================== -->
+  <div id="reportModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-sm">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-pop">
+      <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-slate-900 to-teal-900 text-white">
+        <div>
+          <h2 class="text-base sm:text-lg font-extrabold flex items-center gap-2">
+            <span>📈</span> Exam Diagnostic Report &amp; Achievements
+          </h2>
+          <p id="reportSubtitle" class="text-xs text-teal-200">Performance breakdown and active recall recommendations</p>
+        </div>
+        <button id="btnCloseReport" type="button" class="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition">✕ Close</button>
+      </div>
+      <div id="reportBody" class="p-5 sm:p-6 overflow-y-auto space-y-5"></div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 3: CUSTOM CONFIRMATION DIALOG (NO alert()/confirm())            -->
+  <!-- ===================================================================== -->
+  <div id="confirmModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-6 animate-pop">
+      <h3 id="confirmTitle" class="text-lg font-extrabold text-slate-900 dark:text-white mb-2">Confirm Action</h3>
+      <p id="confirmMessage" class="text-sm text-slate-600 dark:text-slate-300 mb-6"></p>
+      <div class="flex items-center justify-end gap-2.5">
+        <button id="btnConfirmCancel" type="button" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">Cancel</button>
+        <button id="btnConfirmOk" type="button" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold shadow-sm transition">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION JAVASCRIPT                                                -->
+  <!-- ===================================================================== -->
+  <script>
+    (() => {
+      'use strict';
+
+      /* ===================================================================
+         1. COMPLETE 75-QUESTION BANK (MODULES 4 & 5, SETS A, B, C)
+         =================================================================== */
+      const QUESTION_BANK = {
+        A: [
+          // --- SET A: PART I (TRUE OR FALSE - RIGHT MINUS WRONG) ---
+          {
+            id: 'A1', set: 'A', part: 1, type: 'tf', module: 4, page: 'p. 43', section: 'Introduction',
+            question: 'Although the Earth is rich in water, only about 1% is liquid fresh water required for our highest priority needs.',
+            answer: true,
+            explanation: 'Earth is covered in water, yet only 1% is liquid fresh water available for priority human needs, making water conservation and management vital.',
+            excerpt: 'Although the earth is rich in water, only one percent is liquid fresh water, the form we require for our highest priority needs.'
+          },
+          {
+            id: 'A2', set: 'A', part: 1, type: 'tf', module: 4, page: 'p. 44', section: 'Lecture Discussion (Hydration)',
+            question: 'Dry mouth is the earliest and primary indicator that the human body is becoming dehydrated.',
+            answer: false,
+            explanation: 'Dry mouth is actually the LAST sign of dehydration, not the first. Early signs to watch for include constipation, headaches, indigestion, weight gain, fluid retention, and dark pungent urine.',
+            excerpt: 'Dry mouth is not an indication of dehydration, in fact, it is the last sign.'
+          },
+          {
+            id: 'A3', set: 'A', part: 1, type: 'tf', module: 4, page: 'p. 44', section: 'Problems with Groundwater',
+            question: 'In coastal areas, fresh groundwater is denser than saline water and therefore lies beneath the saltwater layer.',
+            answer: false,
+            explanation: 'Fresh water is LESS dense than saline (salty) water, so it floats ABOVE the saline water layer. Pumping too quickly pulls the denser saltwater upward (saline intrusion).',
+            excerpt: 'Because fresh water is less dense than saline water, it floats above the saline water.'
+          },
+          {
+            id: 'A4', set: 'A', part: 1, type: 'tf', module: 4, page: 'p. 45', section: 'Types of Drinking Water',
+            question: 'Distilled water is considered the purest form of water and is recommended as the healthiest daily drinking water.',
+            answer: false,
+            explanation: 'Although distilled (demineralized) water is considered the purest form of water, it is generally NOT recommended for drinking because boiling removes all minerals and salts, which may lead to mineral deficiencies.',
+            excerpt: 'While being considered to be the purest form of water, it is generally not recommended for drinking. Drinking distilled water may lead to mineral deficiencies.'
+          },
+          {
+            id: 'A5', set: 'A', part: 1, type: 'tf', module: 4, page: 'p. 46', section: 'Metro Manila Water Supply System',
+            question: 'The La Mesa Water Treatment Plant supplies the eastern half of Metro Manila, while the Balara Treatment Plant serves the western half.',
+            answer: false,
+            explanation: 'The zones are reversed. The La Mesa Water Treatment Plant serves the WESTERN half of Metro Manila (2,400 MLD), while the Balara Treatment Plant supplies the EASTERN half (1,600 MLD).',
+            excerpt: 'The La Mesa Water Treatment Plant serves the western half of Metro Manila, while the existing Balara Water Treatment Plant supplies the eastern half.'
+          },
+          {
+            id: 'A6', set: 'A', part: 1, type: 'tf', module: 4, page: 'p. 47', section: 'Metropolitan Waterworks and Sewerage System (MWSS)',
+            question: 'Republic Act 6234, enacted on June 19, 1971, dissolved NAWASA and created the Metropolitan Waterworks and Sewerage System (MWSS).',
+            answer: true,
+            explanation: 'RA 6234 replaced the National Waterworks and Sewerage System (NAWASA) with MWSS to ensure an uninterrupted, adequate potable water supply and proper sewerage maintenance.',
+            excerpt: 'On 19 June 1971, Republic Act 6234 was enacted. It dissolved the National Waterworks and Sewerage System (NAWASA) and created in its place the Metropolitan Waterworks and Sewerage System (MWSS).'
+          },
+          {
+            id: 'A7', set: 'A', part: 1, type: 'tf', module: 5, page: 'pp. 55–56', section: 'Managing the Wastewater',
+            question: 'In developed countries where greywater and blackwater are separated, greywater is permitted to be used for watering plants or recycled to flush toilets.',
+            answer: true,
+            explanation: 'Greywater (from sinks, showers, washing) has lower contamination than blackwater (toilets), allowing it to be reused for watering plants and/or flushing toilets.',
+            excerpt: 'Greywater is being permitted to be used for watering plants and/or recycled to flush toilets.'
+          },
+          {
+            id: 'A8', set: 'A', part: 1, type: 'tf', module: 5, page: 'p. 56', section: 'Types of Sewer Pipes',
+            question: 'Orangeburg sewer pipes are highly durable with a lifespan exceeding 100 years, making them ideal for modern installations.',
+            answer: false,
+            explanation: 'Orangeburg pipe is made of wood fibers and water-resistant adhesive; while light and easy to cut, it is NOT very durable—its lifespan is less than 50 years—so it is no longer a viable option for new installations.',
+            excerpt: "Unfortunately, it's not very durable - its lifespan is less than 50 years - so it's not a viable option for new installations anymore."
+          },
+          {
+            id: 'A9', set: 'A', part: 1, type: 'tf', module: 5, page: 'p. 57', section: 'Wastewater Treatment Process',
+            question: 'During Step 4 (Aeration / Activated Sludge) of wastewater treatment, the wastewater receives most of its treatment through biological degradation.',
+            answer: true,
+            explanation: 'Microorganisms consume pollutants and transform them into cell tissue, water, and nitrogen—accelerating natural degradation that takes years in lakes and rivers.',
+            excerpt: 'In this step, the wastewater receives most of its treatment. Through biological degradation, the pollutants are consumed by microorganisms and transformed into cell tissue, water, and nitrogen.'
+          },
+          {
+            id: 'A10', set: 'A', part: 1, type: 'tf', module: 5, page: 'p. 61', section: 'Sewerage / Septic / Drainage Systems in the Philippines',
+            question: 'Most Philippine cities maintain separate underground pipe networks for stormwater drainage and domestic wastewater sewerage.',
+            answer: false,
+            explanation: 'Most Philippine cities have NO separate stormwater and wastewater (sewerage) systems; wastewater from septic systems freely mixes with stormwater in combined drainage channels.',
+            excerpt: 'There are no separate storm water and waste water (sewerage) systems. Wastewater from septic systems freely mixes with the stormwater.'
+          },
+
+          // --- SET A: PART II (IDENTIFICATION WITH CHOICES) ---
+          {
+            id: 'A11', set: 'A', part: 2, type: 'id', module: 4, page: 'p. 44', section: 'Problems with Groundwater',
+            question: 'What is the local drop in the water table that first forms around a well when groundwater is extracted faster than nature can resupply it?',
+            answer: 'Cone of depression',
+            choices: ['Cone of depression', 'Saline boundary', 'Hydraulic gradient', 'Pore collapse'],
+            explanation: 'Overdrafting a well first forms a local cone of depression around the well before gradually lowering the water table across a broad region.',
+            excerpt: 'First, a cone of depression forms locally around the well; then the water table gradually becomes lower in a broad region.'
+          },
+          {
+            id: 'A12', set: 'A', part: 2, type: 'id', module: 4, page: 'p. 45', section: 'Types of Drinking Water',
+            question: 'Which type of drinking water is considered the most popular, formed when rainwater accumulates underground and emerges at the surface as a puddle without passing through a community water system?',
+            answer: 'Spring Water',
+            choices: ['Spring Water', 'Mineral Water', 'Purified Water', 'Tap Water'],
+            explanation: 'Spring water comes from underground rainwater emerging naturally as a spring and is noted in the module as the most popular type.',
+            excerpt: 'Spring Water. Considered to be the most popular type. Rainwater that accumulates underground comes to the surface as a puddle, which is also called a spring.'
+          },
+          {
+            id: 'A13', set: 'A', part: 2, type: 'id', module: 4, page: 'p. 46', section: 'Types of Drinking Water',
+            question: 'What intentional chemical process uses an ionizer to increase the pH level of regular water to produce most commercial alkaline water?',
+            answer: 'Electrolysis',
+            choices: ['Electrolysis', 'Distillation', 'Coagulation', 'Flocculation'],
+            explanation: 'While natural alkaline water picks up minerals over rocks, most commercial alkaline water is produced artificially via electrolysis using an ionizer.',
+            excerpt: 'However, most alkaline water becomes that way through an intentional chemical process called electrolysis. This process uses an ionizer to increase the pH of regular water.'
+          },
+          {
+            id: 'A14', set: 'A', part: 2, type: 'id', module: 4, page: 'p. 48', section: 'MWSS Privatization',
+            question: "Which 1997 Philippine law, also known as 'The Water Crisis Act,' paved the way for the privatization of MWSS?",
+            answer: 'Republic Act 8041',
+            choices: ['Republic Act 8041', 'Republic Act 6234', 'Presidential Decree No. 198', 'Republic Act 8749'],
+            explanation: 'RA 8041 (1997) is The Water Crisis Act. RA 6234 created MWSS (1971); PD 198 created LWUA (1973); RA 8749 is the Clean Air Act.',
+            excerpt: "In 1997, the Legislature passed into law Republic Act 8041, also known as 'The Water Crisis Act.' The Act, which paved the way for the privatization of MWSS..."
+          },
+          {
+            id: 'A15', set: 'A', part: 2, type: 'id', module: 4, page: 'p. 53', section: 'Water Treatment Processes (Coagulation)',
+            question: 'What is the most common coagulant chemical used in water treatment facilities, having the chemical formula Al₂(SO₄)₃?',
+            answer: 'Aluminum sulfate (Alum)',
+            choices: ['Aluminum sulfate (Alum)', 'Chlorine gas (Cl₂)', 'Ferric chloride', 'Polyaluminium chloride'],
+            explanation: 'Aluminum sulfate (alum) is the most common coagulant; ferric chloride and polyaluminium chloride are alternative Al and Fe salts.',
+            excerpt: 'The most common coagulant used in water treatment facilities is aluminum sulfate (alum, Al2(SO4)3).'
+          },
+          {
+            id: 'A16', set: 'A', part: 2, type: 'id', module: 5, page: 'p. 56', section: 'Managing the Wastewater',
+            question: 'Which conventional stage of sewage treatment temporarily holds sewage in a basin so heavy solids settle to the bottom while oil, grease, and lighter solids float to the surface?',
+            answer: 'Primary treatment',
+            choices: ['Primary treatment', 'Secondary treatment', 'Tertiary treatment', 'Sludge treatment'],
+            explanation: 'Primary treatment physically separates heavy settling solids and floating oils/grease before liquids proceed to biological secondary treatment.',
+            excerpt: 'Primary treatment temporarily holds the sewage in a basin where heavy solids can settle to the bottom while oil, grease and lighter solids float to the surface.'
+          },
+          {
+            id: 'A17', set: 'A', part: 2, type: 'id', module: 5, page: 'p. 56', section: 'Types of Sewer Pipes',
+            question: 'Which underground plastic sewer pipe material is black in color and generally stronger than its white plastic counterpart?',
+            answer: 'ABS pipe',
+            choices: ['ABS pipe', 'PVC pipe', 'Cast Iron pipe', 'Orangeburg pipe'],
+            explanation: 'PVC is white and more flexible, whereas ABS is black and stronger. Both are inexpensive and help prevent underground roots from causing blockages.',
+            excerpt: 'They also differ by color - PVC is white and ABS is black. In general, PVC is more flexible and ABS is stronger.'
+          },
+          {
+            id: 'A18', set: 'A', part: 2, type: 'id', module: 5, page: 'p. 57', section: 'Wastewater Treatment Process (Step 3)',
+            question: 'What are the large circular tanks used in Step 3 (Primary Settling) of wastewater treatment where primary sludge settles to the bottom?',
+            answer: 'Clarifiers',
+            choices: ['Clarifiers', 'Digesters', 'Disc filters', 'Aeration tanks'],
+            explanation: 'Clarifiers settle slower-settling solids as primary sludge; digesters receive the skimmed floating grease and settled sludge afterward.',
+            excerpt: 'The material, which will settle, but at a slower rate than step two, is taken out using large circular tanks called clarifiers.'
+          },
+          {
+            id: 'A19', set: 'A', part: 2, type: 'id', module: 5, page: 'p. 57', section: 'Wastewater Treatment Process (Step 7)',
+            question: 'Which disinfection method is specifically used after filtration in Step 7 of the wastewater treatment process to ensure treated wastewater is virtually free of bacteria?',
+            answer: 'Ultraviolet (UV) disinfection',
+            choices: ['Ultraviolet (UV) disinfection', 'Pre-chlorination', 'Rapid mixing', 'Gravity filtration'],
+            explanation: 'In Module 5’s 8-step wastewater treatment process, ultraviolet disinfection is used in Step 7 after 10-micron filtration to kill remaining bacteria to permit levels.',
+            excerpt: 'To assure the treated wastewater is virtually free of bacteria, ultraviolet disinfection is used after the filtration step.'
+          },
+          {
+            id: 'A20', set: 'A', part: 2, type: 'id', module: 5, page: 'p. 61', section: 'Sewerage / Septic / Drainage Systems in the Philippines',
+            question: 'In the Philippines, who holds a major responsibility for the installation and maintenance of drainage systems along with roads and water systems?',
+            answer: 'Local government',
+            choices: ['Local government', 'MWSS Regulatory Office', 'LWUA', 'Department of Finance'],
+            explanation: 'Module 5 explicitly notes that installing and maintaining drainage systems (along with roads and water systems) is a major responsibility of local government.',
+            excerpt: 'The installation and maintenance of drainage systems (along with roads and water systems), is a one of the major responsibility of local government.'
+          },
+
+          // --- SET A: PART III (ENUMERATION) ---
+          {
+            id: 'A21', set: 'A', part: 3, type: 'enum', module: 4, page: 'pp. 44–45', section: 'Types of Water',
+            question: 'Enumerate the 4 Types of Water discussed in Module 4.',
+            items: [
+              { label: 'Groundwater', keywords: ['groundwater', 'ground water', 'the groundwater'] },
+              { label: 'Surface Water', keywords: ['surface water', 'surface'] },
+              { label: 'Wastewater', keywords: ['wastewater', 'waste water', 'sewage'] },
+              { label: 'Stormwater', keywords: ['stormwater', 'storm water'] }
+            ],
+            explanation: 'Module 4 classifies water into 4 major types: Groundwater, Surface Water, Wastewater, and Stormwater.',
+            excerpt: 'TYPES OF WATER: 1. The Groundwater, 2. Surface Water, 3. Wastewater, 4. Stormwater.'
+          },
+          {
+            id: 'A22', set: 'A', part: 3, type: 'enum', module: 4, page: 'p. 44', section: 'Problems with Groundwater',
+            question: 'Enumerate the 4 Problems with Groundwater.',
+            items: [
+              { label: 'Groundwater overdraft / lowering the water table', keywords: ['overdraft', 'groundwater overdraft', 'lowering the water table', 'lowering water table', 'water table drop', 'water table'] },
+              { label: 'Pore collapse and land subsidence', keywords: ['pore collapse', 'land subsidence', 'subsidence', 'pore collapse and land subsidence'] },
+              { label: 'Saline intrusion', keywords: ['saline intrusion', 'saltwater intrusion', 'salt water intrusion', 'saline'] },
+              { label: 'Reversing the flow direction of groundwater', keywords: ['reversing the flow direction', 'reversing flow', 'flow reversal', 'reverse flow', 'reversing the flow', 'flow direction'] }
+            ],
+            explanation: 'Excessive groundwater extraction causes overdraft/lowering water table, pore collapse & land subsidence, saline intrusion, and flow direction reversal.',
+            excerpt: 'Problems with Groundwater: a. Groundwater overdraft or lowering the water table; b. Pore collapse and land subsidence; c. Saline intrusion; d. Reversing the flow direction of groundwater.'
+          },
+          {
+            id: 'A23', set: 'A', part: 3, type: 'enum', module: 4, page: 'p. 46', section: 'Metro Manila Water Supply System',
+            question: "Enumerate the 3 Main Dams that serve as the sources of Metro Manila's water supply.",
+            items: [
+              { label: 'Angat Dam', keywords: ['angat', 'angat dam'] },
+              { label: 'Ipo Dam', keywords: ['ipo', 'ipo dam'] },
+              { label: 'La Mesa Dam', keywords: ['la mesa', 'la mesa dam', 'lamesa', 'lamesa dam'] }
+            ],
+            explanation: 'Metro Manila’s raw water comes primarily from Angat Dam, funneled to Ipo Dam, then conveyed to La Mesa Dam before treatment.',
+            excerpt: "The main sources of Metro Manila's water supply are the Angat, Ipo, and La Mesa Dams."
+          },
+          {
+            id: 'A24', set: 'A', part: 3, type: 'enum', module: 5, page: 'p. 56', section: 'Managing the Wastewater',
+            question: 'Enumerate the 3 Conventional Stages of Sewage Treatment.',
+            items: [
+              { label: 'Primary treatment', keywords: ['primary', 'primary treatment'] },
+              { label: 'Secondary treatment', keywords: ['secondary', 'secondary treatment'] },
+              { label: 'Tertiary treatment', keywords: ['tertiary', 'tertiary treatment'] }
+            ],
+            explanation: 'Conventional sewage treatment progresses through Primary (physical settling/skimming), Secondary (biological), and Tertiary (advanced disinfection/reuse) stages.',
+            excerpt: 'Conventional treatment involves three stages; primary, secondary and tertiary treatment.'
+          },
+          {
+            id: 'A25', set: 'A', part: 3, type: 'enum', module: 5, page: 'p. 56', section: 'Types of Sewer Pipes',
+            question: 'Enumerate the 4 Types of Sewer Pipes (from old to new).',
+            items: [
+              { label: 'Clay sewer pipes', keywords: ['clay', 'clay pipe', 'clay pipes', 'clay sewer pipes'] },
+              { label: 'Orangeburg pipe', keywords: ['orangeburg', 'orangeburg pipe', 'orangeburg pipes'] },
+              { label: 'Cast Iron pipes', keywords: ['cast iron', 'cast-iron', 'cast iron pipe', 'cast iron pipes'] },
+              { label: 'PVC and ABS', keywords: ['pvc', 'abs', 'pvc and abs', 'pvc/abs', 'plastic', 'plastic pipes'] }
+            ],
+            explanation: 'From oldest to newest, residential sewer lines use Clay, Orangeburg, Cast Iron, and modern plastic pipes (PVC and ABS).',
+            excerpt: 'Types of sewer line pipes - from old to new: 1. Clay sewer pipes, 2. Orangeburg pipe, 3. Cast Iron Pipes, 4. PVC and ABS.'
+          }
+        ],
+
+        B: [
+          // --- SET B: PART I (TRUE OR FALSE - RIGHT MINUS WRONG) ---
+          {
+            id: 'B1', set: 'B', part: 1, type: 'tf', module: 4, page: 'p. 43', section: 'Introduction',
+            question: 'Agriculture is not only our most essential industry, but also our largest consumer of fresh water.',
+            answer: true,
+            explanation: 'Module 4 emphasizes that agriculture is both our most essential industry and the largest consumer of fresh water, increasingly competing with metropolitan areas.',
+            excerpt: 'Agriculture is our most essential industry, but it is also our largest consumer of fresh water.'
+          },
+          {
+            id: 'B2', set: 'B', part: 1, type: 'tf', module: 4, page: 'p. 43', section: 'Lecture Discussion (Hydration)',
+            question: 'Beverages like coffee, tea, alcohol, and sugary soft drinks help rehydrate the body by adding directly to water reserves.',
+            answer: false,
+            explanation: 'These beverages are diuretics and are counterproductive in hydration; they cause loss of both their dissolved water and the body’s stored water reserves.',
+            excerpt: 'Beverages such as coffee, tea, alcohol, soft and sugary drinks are often counterproductive in hydration, these are diuretics and will cause not only the loss of water that are dissolved in, but they will also draw water that human body reserves.'
+          },
+          {
+            id: 'B3', set: 'B', part: 1, type: 'tf', module: 4, page: 'p. 44', section: 'Types of Water (Surface Water)',
+            question: 'Because surface waters are easily accessed, they account for around 78% of the fresh water we use.',
+            answer: true,
+            explanation: 'Surface waters (streams, rivers, lakes, reservoirs, and wetlands) make up roughly 78% of used fresh water, with over 1.2 billion people in big cities relying primarily on them.',
+            excerpt: 'Surface waters, because they are easily accessed, around 78% of the fresh water we use.'
+          },
+          {
+            id: 'B4', set: 'B', part: 1, type: 'tf', module: 4, page: 'p. 46', section: 'Types of Drinking Water (Alkaline Water)',
+            question: 'Standard drinking water has a neutral pH of 7, whereas alkaline water typically has a pH of 8 or 9.',
+            answer: true,
+            explanation: 'On the 0–14 pH scale, 7 is neutral and higher numbers are alkaline; alkaline drinking water usually has a pH of 8 or 9 along with alkaline minerals and negative ORP.',
+            excerpt: 'Standard drinking water has a neutral pH of 7, while alkaline usually has a pH of 8 or 9.'
+          },
+          {
+            id: 'B5', set: 'B', part: 1, type: 'tf', module: 4, page: 'p. 46', section: 'Metro Manila Water Supply System',
+            question: 'When both the La Mesa and Balara Treatment Plants operate together, their combined water processing capacity is 3,000 MLD.',
+            answer: false,
+            explanation: 'La Mesa processes 2,400 MLD and Balara processes 1,600 MLD, giving a total combined capacity of 4,000 MLD (million liters per day).',
+            excerpt: 'When both Balara and La Mesa Treatment Plants are operation, the total processing capacity will be 4,000 mld.'
+          },
+          {
+            id: 'B6', set: 'B', part: 1, type: 'tf', module: 4, page: 'pp. 48–50', section: 'MWSS Privatization / Concessionaires',
+            question: 'Under the 1997 Concession Agreement, Maynilad Water Services, Inc. operates the East Zone while Manila Water Company, Inc. operates the West Zone.',
+            answer: false,
+            explanation: 'The zones are swapped: Manila Water Company, Inc. (MWCI) holds the East Zone (23 cities/municipalities including Rizal), while Maynilad Water Services, Inc. (MWSI) operates the West Zone (17 cities/municipalities down to Cavite).',
+            excerpt: 'This effectively transferred the operational responsibilities of MWSS to Manila Water Company, Inc. (for the East Zone) and Maynilad Water Services, Inc. (for the West Zone).'
+          },
+          {
+            id: 'B7', set: 'B', part: 1, type: 'tf', module: 4, page: 'p. 53', section: 'Water Treatment Processes (Flocculation)',
+            question: 'During water treatment, polymers are used to help remove suspended particles that do not agglomerate well by flocculation.',
+            answer: true,
+            explanation: 'Rapid mixing disperses aluminum sulfate and polymer; polymers help remove suspended particles that fail to agglomerate well during flocculation.',
+            excerpt: 'Other suspended particles that do not agglomerate well by flocculation are removed from the water through the use of polymers.'
+          },
+          {
+            id: 'B8', set: 'B', part: 1, type: 'tf', module: 5, page: 'p. 56', section: 'Types of Sewer Pipes',
+            question: 'Clay sewer pipes degrade easily when exposed to household chemicals, but they are resistant to pressure from underground roots.',
+            answer: false,
+            explanation: 'It is the exact opposite: clay sewer pipes do NOT degrade from chemicals, but they are heavy, hard to cut, and prone to breaking due to pressure from underground roots.',
+            excerpt: 'The material does not degrade from chemicals but it is heavy, hard to cut, and prone to breaking due to pressure from underground roots.'
+          },
+          {
+            id: 'B9', set: 'B', part: 1, type: 'tf', module: 5, page: 'p. 57', section: 'Wastewater Treatment Process (Step 3)',
+            question: 'In Step 3 (Primary Settling) of wastewater treatment, chemicals are added to remove phosphorus.',
+            answer: true,
+            explanation: 'Alongside settling primary sludge and skimming floating grease to digesters, Step 3 adds chemicals to remove phosphorus from the wastewater.',
+            excerpt: 'In this step, chemicals are also added to remove phosphorus.'
+          },
+          {
+            id: 'B10', set: 'B', part: 1, type: 'tf', module: 5, page: 'p. 57', section: 'Wastewater Treatment Process (Step 6)',
+            question: 'In Step 6 (Filtration) of wastewater treatment, clarified effluent is polished through 10-micron polyester media, and captured solids are periodically backwashed to the head of the plant.',
+            answer: true,
+            explanation: 'Disc filters with 10-micron polyester media polish the clarified effluent, and periodic backwashing returns captured surface material to the plant’s head for treatment.',
+            excerpt: 'The clarified effluent is polished in this step by filtering through 10 micron polyester media. The material captured on the surface of the disc filters is periodically backwashed and returned to the head of the plant for treatment.'
+          },
+
+          // --- SET B: PART II (IDENTIFICATION WITH CHOICES) ---
+          {
+            id: 'B11', set: 'B', part: 2, type: 'id', module: 4, page: 'p. 43', section: 'Lecture Discussion',
+            question: 'Approximately what percentage of the human body is made up of water?',
+            answer: 'About 75%',
+            choices: ['About 75%', 'About 55%', 'About 66%', 'About 90%'],
+            explanation: "Earth's surface is about two-thirds (~66%) covered by water, whereas the human body is about 75% water.",
+            excerpt: "The Earth's surface is covered by water with about two-thirds and the human body with about 75%."
+          },
+          {
+            id: 'B12', set: 'B', part: 2, type: 'id', module: 4, page: 'p. 44', section: 'Problems with Groundwater',
+            question: 'What do geologists call the phenomenon where rapid pumping in a coastal well raises the saltwater boundary above the base of the well?',
+            answer: 'Saline intrusion',
+            choices: ['Saline intrusion', 'Pore collapse', 'Groundwater overdraft', 'Flow reversal'],
+            explanation: 'Fresh water floats above denser saline water; excessive pumping pulls the boundary upward until the well yields useless saline water.',
+            excerpt: 'And if this boundary rises above the base of the well, then the well will start to yield useless saline water. Geologists refer to this phenomenon as saline intrusion.'
+          },
+          {
+            id: 'B13', set: 'B', part: 2, type: 'id', module: 4, page: 'p. 45', section: 'Types of Water (Stormwater)',
+            question: 'Which agency defines stormwater as runoff generated when rain and snowmelt flow over land or impervious surfaces without percolating into the ground?',
+            answer: 'U.S. EPA',
+            choices: ['U.S. EPA', 'MWSS', 'LWUA', 'WHO'],
+            explanation: 'Module 4 cites the U.S. EPA definition of stormwater, noting it runs over surfaces like asphalt carrying engine oil, fertilizer, and radiator fluid.',
+            excerpt: 'Stormwater is defined by U.S. EPA as the runoff generated when precipitation from rain and snowmelt events flows over land or impervious surfaces without percolating into the ground.'
+          },
+          {
+            id: 'B14', set: 'B', part: 2, type: 'id', module: 4, page: 'p. 46', section: 'Types of Drinking Water (Alkaline Water)',
+            question: 'Which measurement in alkaline water indicates a greater ability to act as an antioxidant when its value is more negative?',
+            answer: 'Oxidation-reduction potential (ORP)',
+            choices: ['Oxidation-reduction potential (ORP)', 'pH level', 'Dissolved Oxygen (DO)', 'Turbidity'],
+            explanation: 'Aside from pH 8–9 and alkaline minerals, alkaline water must have negative ORP—the more negative the value, the greater its antioxidant ability.',
+            excerpt: "The more negative the ORP value, the greater the water's ability to act as an antioxidant."
+          },
+          {
+            id: 'B15', set: 'B', part: 2, type: 'id', module: 4, page: 'p. 48', section: 'Problems and Rationale for MWSS Privatization',
+            question: 'What term refers to the unbilled or lost portion of water produced or supplied—caused by meter tampering, illegal connections, pipeline leaks, and illegal fire hydrant use?',
+            answer: 'Non-Revenue Water (NRW)',
+            choices: ['Non-Revenue Water (NRW)', 'Recycled Water', 'Stormwater Runoff', 'Effluent'],
+            explanation: 'Prior to privatization, MWSS had the highest Non-Revenue Water (NRW) in Asia—nearly twice that of developed countries.',
+            excerpt: 'NRW refers to the unbilled or lost portion of water produced or supplied. This is caused mainly by meter tampering, illegal connections, pipeline leaks, and the illegal use of fire hydrants.'
+          },
+          {
+            id: 'B16', set: 'B', part: 2, type: 'id', module: 4, page: 'p. 51', section: 'Water Supply Outside Metro Manila (LWUA)',
+            question: "Which decree signed on May 25, 1973, known as 'The Provincial Water Utilities Act of 1973,' created LWUA and provincial Water Districts?",
+            answer: 'Presidential Decree No. 198',
+            choices: ['Presidential Decree No. 198', 'Republic Act 6234', 'Republic Act 8041', 'Presidential Decree No. 1586'],
+            explanation: 'PD 198 created LWUA and established the "LWUA-Water District Concept" to develop provincial water supply systems outside Metro Manila.',
+            excerpt: "LWUA was created through Presidential Decree No. 198, also known as 'The Provincial Water Utilities Act of 1973,' which was signed into law on May 25, 1973."
+          },
+          {
+            id: 'B17', set: 'B', part: 2, type: 'id', module: 4, page: 'p. 52', section: 'Water Treatment Processes (Screening)',
+            question: 'Which initial water treatment step removes large surface-water debris like sticks, logs, leaves, fish, and trash at the water intake?',
+            answer: 'Screening',
+            choices: ['Screening', 'Rapid Mixing', 'Sedimentation', 'Pre-Chlorination'],
+            explanation: 'Large screens cover intake tunnels and aqueducts to prevent debris from clogging the water treatment system and must be cleaned periodically.',
+            excerpt: 'Surface water (water from Angat Dam and Ipo Dam) often contains large debris, such as sticks, logs, leaves, fish, and trash... treatment facilities that use surface water have large screens that cover the site of water intake.'
+          },
+          {
+            id: 'B18', set: 'B', part: 2, type: 'id', module: 5, page: 'p. 56', section: 'Types of Sewer Pipes',
+            question: "Which type of sewer pipe is described as 'about as strong as you can get,' but is heavy, expensive, and requires special tools to cut?",
+            answer: 'Cast Iron Pipe',
+            choices: ['Cast Iron Pipe', 'Clay sewer pipe', 'ABS pipe', 'Orangeburg pipe'],
+            explanation: 'Cast iron is extremely strong and still found in many homes, though modern plastic pipes (PVC/ABS) are more popular for new installations.',
+            excerpt: 'Cast Iron Pipes is about as strong as you can get... The downsides to cast-iron are that the material is heavy, requires special tools to cut, and expensive.'
+          },
+          {
+            id: 'B19', set: 'B', part: 2, type: 'id', module: 5, page: 'p. 57', section: 'Wastewater Treatment Process (Step 2)',
+            question: 'Which step in the wastewater treatment process immediately follows Screening and Pumping to remove heavy but fine materials like sand and gravel?',
+            answer: 'Step 2: Grit Removal',
+            choices: ['Step 2: Grit Removal', 'Step 3: Primary Settling', 'Step 6: Filtration', 'Step 5: Secondary Settling'],
+            explanation: 'Grit removal removes fine heavy particles (sand and gravel) for landfill disposal before slower-settling solids enter the primary clarifiers.',
+            excerpt: 'Step 2: Grit Removal. In this step, heavy but fine material such as sand and gravel is removed from the wastewater. This material is also disposed of in a landfill.'
+          },
+          {
+            id: 'B20', set: 'B', part: 2, type: 'id', module: 5, page: 'p. 58', section: 'Wastewater Treatment Process (Step 8)',
+            question: 'When treated wastewater exits the effluent outfall after Step 8 (Oxygen Uptake), what minimum level of pollutant removal is maintained?',
+            answer: '98% or greater',
+            choices: ['98% or greater', '90% or greater', '78% or greater', '69% or greater'],
+            explanation: 'Over 90% treatment is achieved at Secondary Settling (Step 5), whereas final discharge at the outfall maintains 98% or greater pollutant removal.',
+            excerpt: 'The water discharged to the river must meet stringent requirements set by the DNR. Pollutant removal is maintained at 98% or greater.'
+          },
+
+          // --- SET B: PART III (ENUMERATION) ---
+          {
+            id: 'B21', set: 'B', part: 3, type: 'enum', module: 4, page: 'p. 43', section: 'Lecture Discussion (Hydration)',
+            question: 'Enumerate the 4 Natural Processes through which the human body loses 2–3 liters of water daily.',
+            items: [
+              { label: 'Elimination', keywords: ['elimination'] },
+              { label: 'Urination', keywords: ['urination', 'urine'] },
+              { label: 'Perspiration', keywords: ['perspiration', 'sweating', 'sweat'] },
+              { label: 'Respiration', keywords: ['respiration', 'breathing'] }
+            ],
+            explanation: 'The body loses roughly 2–3 liters of water each day through elimination, urination, perspiration, and respiration.',
+            excerpt: 'Human body loses about 2-3 liters of water through elimination, urination, perspiration and respiration...'
+          },
+          {
+            id: 'B22', set: 'B', part: 3, type: 'enum', module: 4, page: 'p. 48', section: 'Problems and Rationale for MWSS Privatization',
+            question: 'Enumerate the 5 Problems and Rationale for MWSS Privatization.',
+            items: [
+              { label: 'Poor Coverage', keywords: ['poor coverage', 'coverage'] },
+              { label: 'Inefficient service', keywords: ['inefficient service', 'inefficient', 'intermittent'] },
+              { label: 'Highest Non-Revenue Water (NRW) in Asia', keywords: ['nrw', 'non-revenue water', 'non revenue water', 'highest non-revenue water'] },
+              { label: 'Sewerage', keywords: ['sewerage', 'poor sewerage', 'low sewerage'] },
+              { label: 'Procurement procedures', keywords: ['procurement', 'procurement procedures', 'rigid procurement'] }
+            ],
+            explanation: 'MWSS faced 5 key issues driving privatization: Poor Coverage (69%), Inefficient service (16 hrs/day), Highest NRW in Asia, Low Sewerage (~8%), and Rigid Procurement procedures.',
+            excerpt: 'Problems and Rationale for MWSS Privatization: 1. Poor Coverage, 2. Inefficient service, 3. Highest Non-Revenue Water (NRW) in Asia, 4. Sewerage, 5. Procurement procedures.'
+          },
+          {
+            id: 'B23', set: 'B', part: 3, type: 'enum', module: 4, page: 'p. 48', section: 'Privatization (RA 8041)',
+            question: 'Enumerate the 4 Primary Objectives of Republic Act 8041 (The Water Crisis Act / MWSS Privatization).',
+            items: [
+              { label: 'Transfer financial burden to the private sector', keywords: ['transfer financial burden', 'financial burden', 'private sector'] },
+              { label: 'Improve service standards', keywords: ['improve service standards', 'improve service', 'service standards'] },
+              { label: 'Increase operational efficiency', keywords: ['increase operational efficiency', 'operational efficiency', 'efficiency'] },
+              { label: 'Minimize tariff impact', keywords: ['minimize tariff impact', 'minimize tariff', 'tariff impact', 'tariff'] }
+            ],
+            explanation: 'RA 8041 aimed to transfer financial burden to the private sector, improve service standards, increase operational efficiency, and minimize tariff impact.',
+            excerpt: '1. Transfer financial burden to the private sector, 2. Improve service standards, 3. Increase operational efficiency, 4. Minimize tariff impact.'
+          },
+          {
+            id: 'B24', set: 'B', part: 3, type: 'enum', module: 5, page: 'p. 55', section: 'Introduction (Wastewater Management)',
+            question: 'Enumerate the 3 Categories of Wastewater (Sewage) based on the manner in which it is generated.',
+            items: [
+              { label: 'Domestic sewage', keywords: ['domestic', 'domestic sewage'] },
+              { label: 'Industrial sewage', keywords: ['industrial', 'industrial sewage'] },
+              { label: 'Storm sewage (stormwater)', keywords: ['storm', 'storm sewage', 'stormwater', 'storm water'] }
+            ],
+            explanation: 'Wastewater (sewage) is categorized by how it is generated: domestic sewage, industrial sewage, and storm sewage (stormwater).',
+            excerpt: 'It is typically categorized by the manner in which it is generated—specifically, as domestic sewage, industrial sewage, or storm sewage (stormwater).'
+          },
+          {
+            id: 'B25', set: 'B', part: 3, type: 'enum', module: 5, page: 'p. 57', section: 'Wastewater Treatment Process (Step 4)',
+            question: 'Enumerate the 3 Substances into which pollutants are transformed by microorganisms during Step 4 (Aeration / Activated Sludge).',
+            items: [
+              { label: 'Cell tissue', keywords: ['cell tissue', 'cells', 'tissue'] },
+              { label: 'Water', keywords: ['water', 'h2o'] },
+              { label: 'Nitrogen', keywords: ['nitrogen', 'n2'] }
+            ],
+            explanation: 'Through biological degradation in the aeration tanks, microorganisms consume pollutants and transform them into cell tissue, water, and nitrogen.',
+            excerpt: 'Through biological degradation, the pollutants are consumed by microorganisms and transformed into cell tissue, water, and nitrogen.'
+          }
+        ],
+
+        C: [
+          // --- SET C: PART I (TRUE OR FALSE - RIGHT MINUS WRONG) ---
+          {
+            id: 'C1', set: 'C', part: 1, type: 'tf', module: 4, page: 'p. 44', section: 'Problems with Groundwater',
+            question: 'Pore collapse permanently decreases the porosity and permeability of a rock or sediment, reducing its value as an aquifer.',
+            answer: true,
+            explanation: 'Water cannot be compressed and supports rock/sediment grains; replacing it with compressible air causes grains to pack closely together, resulting in permanent pore collapse and land subsidence.',
+            excerpt: 'Such pore collapse permanently decreases the porosity and permeability of a rock, and thus lessens its value as an aquifer.'
+          },
+          {
+            id: 'C2', set: 'C', part: 1, type: 'tf', module: 4, page: 'p. 45', section: 'Types of Drinking Water',
+            question: 'Mineral water comes from underground sources and naturally contains essential minerals like calcium and magnesium that give it a characteristic salty taste.',
+            answer: true,
+            explanation: 'Underground mineral water naturally contains essential minerals such as calcium and magnesium, giving it its characteristic salty taste and healthy reputation.',
+            excerpt: 'This water comes from underground sources which is why it naturally contains essential minerals like calcium and magnesium that have given the mineral water a reputation as healthy drinking water.'
+          },
+          {
+            id: 'C3', set: 'C', part: 1, type: 'tf', module: 4, page: 'p. 46', section: 'Metro Manila Water Supply System',
+            question: 'The La Mesa Water Treatment Plant depends heavily on massive electromechanical pumps rather than gravity to move raw water and backwash its filters.',
+            answer: false,
+            explanation: 'La Mesa Water Treatment Plant has VERY MINIMAL electromechanical equipment; it relies mostly on water’s hydraulic properties to backwash its filter and gravity to convey raw water.',
+            excerpt: "The La Mesa Water Treatment Plant, with very minimal electromechanical equipment, relies mostly on water's hydraulic properties to backwash its filter and gravity to convey raw water from the source into the plant and out into the distribution system."
+          },
+          {
+            id: 'C4', set: 'C', part: 1, type: 'tf', module: 4, page: 'p. 48', section: 'Problems and Rationale for MWSS Privatization',
+            question: 'Prior to privatization, MWSS provided sewerage coverage to approximately 69% of its service population.',
+            answer: false,
+            explanation: '69% was MWSS’s water supply coverage. Sewerage coverage was only about 8% of the total service population and less than 7% of households.',
+            excerpt: 'Sewerage. Approximately only 8% of the total service population and less than 7% of households in the service area were covered.'
+          },
+          {
+            id: 'C5', set: 'C', part: 1, type: 'tf', module: 4, page: 'p. 49', section: 'The Manila Water Company, Inc. (MWCI)',
+            question: "Manila Water Company's original 25-year concession (1997–2022) was extended by 15 years in 2009, moving its expiration to May 2037.",
+            answer: true,
+            explanation: 'MWSS and the Philippine Government granted Manila Water a 15-year extension in 2009 (extending May 2022 to May 2037); Maynilad received its 15-year extension in 2010.',
+            excerpt: "The Company's concession was extended by another 15 years by MWSS and the Philippine Government in 2009, thereby extending the term from May 2022 to May 2037."
+          },
+          {
+            id: 'C6', set: 'C', part: 1, type: 'tf', module: 4, page: 'p. 50', section: 'The Maynilad Water Services, Inc. (MWSI)',
+            question: 'In 2005, Benpres Holdings and Suez ceded management and control of Maynilad back to MWSS after struggling with the Asian financial crisis and El Niño.',
+            answer: true,
+            explanation: 'After financial, legal, and regulatory disputes triggered by the Asian financial crisis and El Niño, Benpres and Suez returned control to MWSS in 2005, prompting re-privatization.',
+            excerpt: 'In 2005, Benpres and Suez ceded management and control of Maynilad to MWSS.'
+          },
+          {
+            id: 'C7', set: 'C', part: 1, type: 'tf', module: 4, page: 'p. 51', section: 'Water Supply Outside Metro Manila (LWUA)',
+            question: "In 1987, LWUA's area of responsibility was expanded to include Level II communal faucet systems through Rural Waterworks and Sanitation Associations (RWSAs).",
+            answer: true,
+            explanation: 'Where Level III individual household connections were not feasible, LWUA expanded in 1987 to provide Level II communal faucet systems via RWSAs.',
+            excerpt: "In 1987, LWUA's mission and area of responsibility was expanded to include provision of Level II service (communal faucet system) through the Rural Waterworks and Sanitation Associations (RWSAs)..."
+          },
+          {
+            id: 'C8', set: 'C', part: 1, type: 'tf', module: 5, page: 'p. 56', section: 'Managing the Wastewater',
+            question: 'Secondary sewage treatment uses water-borne micro-organisms in a managed habitat to remove suspended and dissolved biological matter.',
+            answer: true,
+            explanation: 'Secondary treatment biologically removes suspended and dissolved organic matter and may require separating the micro-organisms afterward prior to discharge or tertiary treatment.',
+            excerpt: 'Secondary treatment is typically performed in freshwater and other sewers with water-borne micro-organisms in a managed habitat. This treatment removes suspended and dissolved biological matter.'
+          },
+          {
+            id: 'C9', set: 'C', part: 1, type: 'tf', module: 5, page: 'p. 57', section: 'Wastewater Treatment Process (Step 5)',
+            question: 'In Step 5 (Secondary Settling), the activated sludge collected at the bottom of secondary clarifiers is immediately dumped into a landfill.',
+            answer: false,
+            explanation: 'In Step 5, the effluent is over 90% treated, and the biology (activated sludge) is continuously pumped from the bottom of the secondary clarifiers and RETURNED to the aeration tanks in Step 4.',
+            excerpt: 'The biology (activated sludge) is continuously pumped from the bottom of the clarifiers and returned to the aeration tanks in step four.'
+          },
+          {
+            id: 'C10', set: 'C', part: 1, type: 'tf', module: 5, page: 'p. 61', section: 'Sewerage / Septic / Drainage Systems in the Philippines',
+            question: 'Although open concrete drainage ditches in the Philippines can be smelly, they are cheaper and easier to keep clear than covered drainage systems.',
+            answer: true,
+            explanation: 'Module 5 notes that open concrete ditches can be smelly, yet they are cheaper and easier to keep clear than covered drainage channels under concrete sidewalk slabs.',
+            excerpt: 'This can be smelly but cheaper and easier to keep clear than covered drainage systems.'
+          },
+
+          // --- SET C: PART II (IDENTIFICATION WITH CHOICES) ---
+          {
+            id: 'C11', set: 'C', part: 2, type: 'id', module: 4, page: 'p. 43', section: 'Lecture Discussion (Hydration)',
+            question: 'Under normal conditions, how much water does the human body lose daily through elimination, urination, perspiration, and respiration?',
+            answer: 'About 2–3 liters',
+            choices: ['About 2–3 liters', 'About 0.5–1 liter', 'About 5–6 liters', 'About 8–10 liters'],
+            explanation: 'Normally the body loses about 2–3 liters daily, increasing during high performance, exercise, nursing, pregnancy, and illness.',
+            excerpt: 'Human body loses about 2-3 liters of water through elimination, urination, perspiration and respiration, however, this may increase during high performance, exercise, nursing, pregnancy and illness.'
+          },
+          {
+            id: 'C12', set: 'C', part: 2, type: 'id', module: 4, page: 'p. 46', section: 'Metro Manila Water Supply System',
+            question: 'From the La Mesa Portal, how is the water flow split between the La Mesa Treatment Plant and the Balara Treatment Plant?',
+            answer: '60% to La Mesa, 40% to Balara',
+            choices: ['60% to La Mesa, 40% to Balara', '50% to La Mesa, 50% to Balara', '70% to La Mesa, 30% to Balara', '40% to La Mesa, 60% to Balara'],
+            explanation: '60% of flow from La Mesa Portal goes to nearby La Mesa Treatment Plant, while 40% travels 6.8 kilometers to Balara Treatment Plant.',
+            excerpt: 'From the La Mesa Portal, 60% of the flow goes to the nearby La Mesa Treatment Plant, out of which another 40% again travels a distance of 6.8 kilometers to the Balara Treatment Plant.'
+          },
+          {
+            id: 'C13', set: 'C', part: 2, type: 'id', module: 4, page: 'p. 49', section: 'MWSS Retained Functions',
+            question: 'Which MWSS office is primarily mandated to implement the provisions of the Concession Agreement?',
+            answer: 'MWSS Regulatory Office (RO)',
+            choices: ['MWSS Regulatory Office (RO)', 'MWSS Corporate Office (CO)', 'LWUA Board of Trustees', 'Department of Finance'],
+            explanation: 'While the MWSS Corporate Office (CO) manages retained assets and the Umiray-Angat Transbasin Project, the Regulatory Office (RO) implements the Concession Agreement.',
+            excerpt: "The CO's functions are further delineated by the functions of the MWSS Regulatory Office (RO), which is primarily mandated to implement the provisions of the Concession Agreement."
+          },
+          {
+            id: 'C14', set: 'C', part: 2, type: 'id', module: 4, page: 'p. 50', section: 'The Manila Water Company, Inc. (MWCI)',
+            question: 'Which wholly-owned subsidiary of Manila Water handles after-the-meter services (pipelaying, used water services) and sells Healthy Family Purified Water?',
+            answer: 'Manila Water Total Solutions Corporation (MWTS)',
+            choices: ['Manila Water Total Solutions Corporation (MWTS)', 'Manila Water Philippine Ventures, Inc. (MWPV)', 'Manila Water Asia Pacific Pte. Ltd. (MWAP)', 'Manila Water Consortium, Inc.'],
+            explanation: 'MWPV is the domestic holding company, MWAP handles international ventures (Vietnam), and MWTS handles after-the-meter services and Healthy Family Purified Water.',
+            excerpt: "Lastly, Manila Water Total Solutions Corporation ('MWTS'), a wholly-owned subsidiary, handles after-the-meter products and services. Its current offerings include pipelaying, integrated used water services, and the sale of Healthy Family Purified Water..."
+          },
+          {
+            id: 'C15', set: 'C', part: 2, type: 'id', module: 4, page: 'p. 50', section: 'The Maynilad Water Services, Inc. (MWSI)',
+            question: 'Which joint venture won the competitive bidding to re-privatize Maynilad, acquiring 83.96% of its shares and taking over on January 24, 2007?',
+            answer: 'DMCI-MPIC Water Company',
+            choices: ['DMCI-MPIC Water Company', 'Benpres-Suez Consortium', 'Marubeni Water Holdings', 'Ayala-SM Water Corp.'],
+            explanation: 'Metro Pacific Investments Corporation (MPIC) and DMCI Holdings formed DMCI-MPIC Water Company, acquired 83.96% of Maynilad, and launched an aggressive 5-year rehabilitation program.',
+            excerpt: "DMCI-MPIC Water Company, a joint venture between Metro Pacific Investments Corporation (MPIC) and DMCI Holdings, Inc. (DMCI), won the competitive bidding and acquired 83.96% of Maynilad's shares."
+          },
+          {
+            id: 'C16', set: 'C', part: 2, type: 'id', module: 4, page: 'p. 50', section: 'The Maynilad Water Services, Inc. (MWSI)',
+            question: 'Which Japanese company acquired a 20% stake in DMCI-MPIC Water Company in 2013 to become a strategic partner?',
+            answer: 'Marubeni Corporation',
+            choices: ['Marubeni Corporation', 'Suez Lyonnaise des Eaux', 'Mitsubishi Corporation', 'Toshiba Water'],
+            explanation: 'In 2013, Marubeni Corporation of Japan acquired a 20% stake in DMCI-MPIC Water Company and became a strategic partner of the Metro Pacific-DMCI consortium.',
+            excerpt: 'In 2013, Marubeni Corporation of Japan acquired a 20% stake in DMCI-MPIC Water Company and became a strategic partner of the Metro Pacific-DMCI consortium.'
+          },
+          {
+            id: 'C17', set: 'C', part: 2, type: 'id', module: 4, page: 'p. 51', section: 'Water Supply Outside Metro Manila (LWUA)',
+            question: 'Which water supply service level refers to individual household connections, where LWUA is the only Philippine institution with full expertise?',
+            answer: 'Level III',
+            choices: ['Level III', 'Level I', 'Level II', 'Level IV'],
+            explanation: 'Level I = communal well, Level II = communal faucet, and Level III = individual household connection.',
+            excerpt: 'LWUA is the only Philippine water supply institution with full expertise in developing Level III (individual household connection) water supply systems.'
+          },
+          {
+            id: 'C18', set: 'C', part: 2, type: 'id', module: 4, page: 'p. 54', section: 'Water Treatment Processes (Filtration)',
+            question: 'In gravity filtration, how is a filter cleaned to remove the solids collected inside the sand and gravel layers?',
+            answer: 'Forcing clean water upward through the under-drain pipe',
+            choices: ['Forcing clean water upward through the under-drain pipe', 'Boiling the filter media', 'Adding excess aluminum sulfate', 'Scraping the top with screens'],
+            explanation: 'Clean water is added through the bottom under-drain pipe and forced upward through the filter (backwashing) to flush out trapped solid impurities.',
+            excerpt: 'By adding water to the filter through this pipe, clean water can be forced upward through the filter to remove the solids that have collected in the filter. This process is used to clean the filter.'
+          },
+          {
+            id: 'C19', set: 'C', part: 2, type: 'id', module: 5, page: 'p. 57', section: 'Wastewater Treatment Process (Step 8)',
+            question: 'Which step in the wastewater treatment process aerates stabilized treated water if necessary to bring dissolved oxygen up to permit level prior to discharge?',
+            answer: 'Step 8: Oxygen Uptake',
+            choices: ['Step 8: Oxygen Uptake', 'Step 4: Aeration / Activated Sludge', 'Step 6: Filtration', 'Step 7: Disinfection'],
+            explanation: 'Step 8 (Oxygen Uptake) raises dissolved oxygen to permit levels right before the treated water passes through the effluent outfall into the river.',
+            excerpt: 'Step 8: Oxygen Uptake. The treated water, now in a very stabilized high quality state, is aerated if necessary to bring the dissolved oxygen up to permit level.'
+          },
+          {
+            id: 'C20', set: 'C', part: 2, type: 'id', module: 5, page: 'p. 59', section: 'Sludge Treatment',
+            question: 'Which stage processes primary sludge from Step 3 and waste activated sludge from Step 4 to reduce volume and produce a usable end product?',
+            answer: 'Sludge Treatment',
+            choices: ['Sludge Treatment', 'Primary Settling', 'Grit Removal', 'Tertiary Treatment'],
+            explanation: 'Both primary sludge (Step 3) and waste activated sludge (Step 4) undergo Sludge Treatment to reduce volume and produce a usable end product.',
+            excerpt: 'The primary sludge pumped from the bottom of the primary clarifiers in step three, along with the continuous flow of waste activated sludge from the aeration / activated sludge process in step four, must be treated to reduce volume and produce a usable end product.'
+          },
+
+          // --- SET C: PART III (ENUMERATION) ---
+          {
+            id: 'C21', set: 'C', part: 3, type: 'enum', module: 4, page: 'pp. 45–46', section: 'Types of Drinking Water',
+            question: 'Enumerate the 7 Types of Drinking Water discussed in Module 4.',
+            items: [
+              { label: 'Tap Water', keywords: ['tap', 'tap water'] },
+              { label: 'Mineral Water', keywords: ['mineral', 'mineral water'] },
+              { label: 'Spring Water', keywords: ['spring', 'spring water'] },
+              { label: 'Purified Water', keywords: ['purified', 'purified water'] },
+              { label: 'Distilled Water', keywords: ['distilled', 'distilled water', 'demineralized', 'demineralized water'] },
+              { label: 'Bottled Water', keywords: ['bottled', 'bottled water'] },
+              { label: 'Alkaline Water', keywords: ['alkaline', 'alkaline water'] }
+            ],
+            explanation: 'Module 4 describes 7 drinking water types: Tap, Mineral, Spring, Purified, Distilled, Bottled, and Alkaline Water.',
+            excerpt: 'TYPES OF DRINKING WATER: 1. Tap Water, 2. Mineral Water, 3. Spring Water, 4. Purified Water, 5. Distilled Water, 6. Bottled Water, 7. Alkaline Water.'
+          },
+          {
+            id: 'C22', set: 'C', part: 3, type: 'enum', module: 4, page: 'p. 48', section: 'Problems and Rationale for MWSS Privatization (NRW)',
+            question: 'Enumerate the 4 Main Causes of Non-Revenue Water (NRW) cited in Module 4.',
+            items: [
+              { label: 'Meter tampering', keywords: ['meter tampering', 'tampering'] },
+              { label: 'Illegal connections', keywords: ['illegal connections', 'illegal connection'] },
+              { label: 'Pipeline leaks', keywords: ['pipeline leaks', 'pipe leaks', 'leaks', 'pipeline leak'] },
+              { label: 'Illegal use of fire hydrants', keywords: ['fire hydrants', 'fire hydrant', 'illegal use of fire hydrants', 'hydrants', 'illegal fire hydrant'] }
+            ],
+            explanation: 'NRW (unbilled/lost water) is primarily caused by meter tampering, illegal connections, pipeline leaks, and illegal use of fire hydrants.',
+            excerpt: 'This is caused mainly by meter tampering, illegal connections, pipeline leaks, and the illegal use of fire hydrants.'
+          },
+          {
+            id: 'C23', set: 'C', part: 3, type: 'enum', module: 4, page: 'pp. 52–54', section: 'Water Treatment Processes',
+            question: 'Enumerate the 8 Water Treatment Processes covered in Module 4.',
+            items: [
+              { label: 'Screening', keywords: ['screening', 'screen'] },
+              { label: 'Pre-Chlorination', keywords: ['pre-chlorination', 'prechlorination', 'pre chlorination'] },
+              { label: 'Rapid Mixing', keywords: ['rapid mixing', 'rapid mix'] },
+              { label: 'Flocculation', keywords: ['flocculation'] },
+              { label: 'Coagulation', keywords: ['coagulation'] },
+              { label: 'Sedimentation', keywords: ['sedimentation'] },
+              { label: 'Filtration', keywords: ['filtration', 'gravity filtration'] },
+              { label: 'Disinfection', keywords: ['disinfection', 'chlorination'] }
+            ],
+            explanation: 'The 8 potable water treatment steps in Module 4 are Screening, Pre-Chlorination, Rapid Mixing, Flocculation, Coagulation, Sedimentation, Filtration, and Disinfection.',
+            excerpt: '1. Screening, 2. Pre-Chlorination, 3. Rapid Mixing, 4. Flocculation, 5. Coagulation, 6. Sedimentation, 7. Filtration, 8. Disinfection.'
+          },
+          {
+            id: 'C24', set: 'C', part: 3, type: 'enum', module: 5, page: 'pp. 57–58', section: 'Wastewater Treatment Process',
+            question: 'Enumerate the 8 Steps of the Wastewater Treatment Process in Module 5.',
+            items: [
+              { label: 'Screening and Pumping', keywords: ['screening and pumping', 'screening', 'bar screening'] },
+              { label: 'Grit Removal', keywords: ['grit removal', 'grit'] },
+              { label: 'Primary Settling', keywords: ['primary settling', 'primary clarifier', 'primary clarification'] },
+              { label: 'Aeration / Activated Sludge', keywords: ['aeration', 'activated sludge', 'aeration activated sludge'] },
+              { label: 'Secondary Settling', keywords: ['secondary settling', 'secondary clarifier', 'secondary clarification'] },
+              { label: 'Filtration', keywords: ['filtration', 'disc filters', 'disc filtration'] },
+              { label: 'Disinfection', keywords: ['disinfection', 'uv disinfection', 'ultraviolet disinfection'] },
+              { label: 'Oxygen Uptake', keywords: ['oxygen uptake'] }
+            ],
+            explanation: 'The 8 wastewater steps in Module 5 are: Screening & Pumping, Grit Removal, Primary Settling, Aeration/Activated Sludge, Secondary Settling, Filtration, Disinfection, and Oxygen Uptake.',
+            excerpt: 'Step 1: Screening and Pumping, Step 2: Grit Removal, Step 3: Primary Settling, Step 4: Aeration / Activated Sludge, Step 5: Secondary Settling, Step 6: Filtration, Step 7: Disinfection, Step 8: Oxygen Uptake.'
+          },
+          {
+            id: 'C25', set: 'C', part: 3, type: 'enum', module: 5, page: 'p. 55', section: 'Managing the Wastewater',
+            question: 'Enumerate the 3 Types of Processes used in wastewater/sewage treatment to remove contaminants.',
+            items: [
+              { label: 'Chemical', keywords: ['chemical', 'chemical process', 'chemical processes'] },
+              { label: 'Biological', keywords: ['biological', 'biological process', 'biological processes'] },
+              { label: 'Physical', keywords: ['physical', 'physical process', 'physical processes'] }
+            ],
+            explanation: 'Sewage treatment combines chemical, biological, and physical processes to remove chemical, biological, and physical contaminants.',
+            excerpt: 'It includes chemical, biological and physical processes to remove chemical, biological and physical contaminants.'
+          }
+        ]
+      };
+
+      // Lookup dictionary for fast ID access across all 75 questions
+      const ALL_QUESTIONS = [...QUESTION_BANK.A, ...QUESTION_BANK.B, ...QUESTION_BANK.C];
+      const QUESTION_BY_ID = Object.fromEntries(ALL_QUESTIONS.map(q => [q.id, q]));
+
+      /* ===================================================================
+         2. BUILT-IN MODULE 4 & 5 QUICK REVIEWER DATA
+         =================================================================== */
+      const REVIEWER_SECTIONS = [
+        {
+          module: 4, page: 'pp. 43–44', title: 'Water Basics & Human Hydration',
+          content: `
+            <ul class="list-disc pl-5 space-y-1.5 text-slate-700 dark:text-slate-300">
+              <li><strong>Only 1%</strong> of Earth's water is liquid fresh water required for our highest priority needs.</li>
+              <li><strong>Earth's surface:</strong> ~2/3 water. <strong>Human body:</strong> ~75% water.</li>
+              <li><strong>Agriculture:</strong> Our most essential industry and <strong>largest consumer of fresh water</strong>.</li>
+              <li><strong>Daily water loss:</strong> <strong>2–3 liters/day</strong> through 4 processes: <em>Elimination, Urination, Perspiration, Respiration</em>.</li>
+              <li><strong>Diuretics (counterproductive):</strong> Coffee, tea, alcohol, soft &amp; sugary drinks draw water from body reserves.</li>
+              <li><strong>Dehydration signs:</strong> <strong>Dry mouth is the LAST sign!</strong> Earlier signs: constipation, headaches, indigestion, weight gain, fluid retention, dark &amp; pungent urine (pathologies: colitis, kidney stones, bladder/UTI).</li>
+            </ul>
+          `
+        },
+        {
+          module: 4, page: 'pp. 44–45', title: '4 Types of Water & 4 Groundwater Problems',
+          content: `
+            <div class="grid sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+              <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/70">
+                <p class="font-bold text-teal-700 dark:text-teal-300 mb-1.5">4 Types of Water</p>
+                <ol class="list-decimal pl-4 space-y-1 text-slate-700 dark:text-slate-300">
+                  <li><strong>Groundwater:</strong> Beneath ground in soil pores &amp; geologic fractures; discharges at springs/seeps.</li>
+                  <li><strong>Surface Water:</strong> Streams, rivers, lakes, reservoirs, wetlands (~<strong>78%</strong> of used fresh water; &gt;1.2B urban people).</li>
+                  <li><strong>Wastewater:</strong> Affected by human activities; municipal wastewater = <em>sewage</em> (can become recycled water).</li>
+                  <li><strong>Stormwater (U.S. EPA):</strong> Runoff from rain/snowmelt over impervious surfaces (asphalt: engine oil, fertilizer, radiator fluid).</li>
+                </ol>
+              </div>
+              <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/70">
+                <p class="font-bold text-rose-700 dark:text-rose-300 mb-1.5">4 Problems with Groundwater</p>
+                <ol class="list-decimal pl-4 space-y-1 text-slate-700 dark:text-slate-300">
+                  <li><strong>Overdraft / Lowering water table:</strong> Forms a local <em>cone of depression</em> first, then broad drop.</li>
+                  <li><strong>Pore collapse &amp; land subsidence:</strong> Water is incompressible; replacing with air packs grains tightly, permanently reducing porosity &amp; permeability.</li>
+                  <li><strong>Saline intrusion:</strong> Fresh water is <em>less dense</em> (floats above saltwater); fast pumping pulls saltwater up.</li>
+                  <li><strong>Reversing flow direction:</strong> Cone slope reverses hydraulic gradient, drawing septic contaminants into wells.</li>
+                </ol>
+              </div>
+            </div>
+          `
+        },
+        {
+          module: 4, page: 'pp. 45–46', title: '7 Types of Drinking Water',
+          content: `
+            <ol class="list-decimal pl-5 space-y-1 text-slate-700 dark:text-slate-300">
+              <li><strong>Tap Water:</strong> Direct from faucet (groundwater/surface water); must undergo treatment first.</li>
+              <li><strong>Mineral Water:</strong> Underground source; rich in <strong>calcium &amp; magnesium</strong> (characteristic salty taste).</li>
+              <li><strong>Spring Water:</strong> <strong>Most popular type</strong>; rainwater accumulates underground and emerges as a puddle/spring; bypasses community system.</li>
+              <li><strong>Purified Water:</strong> Mechanically processed/filtered to remove impurities (includes treated tap water).</li>
+              <li><strong>Distilled (Demineralized) Water:</strong> Boiled to remove all minerals/salts; purest form, but <strong>NOT recommended for drinking</strong> (mineral deficiencies).</li>
+              <li><strong>Bottled Water:</strong> Mineral, sparkling, or spring; meets sanitary standards; useful in first-aid kits.</li>
+              <li><strong>Alkaline Water:</strong> Higher pH (<strong>8 or 9</strong> vs neutral <strong>7</strong>), alkaline minerals, and <strong>negative ORP</strong> (more negative = better antioxidant). Mostly made by <strong>electrolysis</strong> (ionizer).</li>
+            </ol>
+          `
+        },
+        {
+          module: 4, page: 'pp. 46–47', title: 'Metro Manila Water Supply System Flow & Numbers',
+          content: `
+            <div class="p-3.5 rounded-xl bg-teal-50/70 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 space-y-2 text-slate-700 dark:text-slate-300">
+              <p><strong>3 Main Dams:</strong> Angat Dam &rarr; Ipo Dam &rarr; (<strong>6.4 km</strong> to Bicti) &rarr; <strong>5 aqueducts</strong> (each <strong>16 km</strong> long) &rarr; La Mesa Dam &amp; La Mesa Portal.</p>
+              <p><strong>Flow Split at La Mesa Portal:</strong></p>
+              <ul class="list-disc pl-5 space-y-1">
+                <li><strong>60% &rarr; La Mesa Treatment Plant:</strong> Capacity <strong>2,400 MLD</strong>; serves <strong>Western half</strong> of Metro Manila; minimal electromechanical equipment (relies on <strong>hydraulic backwashing &amp; gravity</strong>).</li>
+                <li><strong>40% &rarr; Balara Treatment Plant:</strong> Travels <strong>6.8 km</strong>; capacity <strong>1,600 MLD</strong> (supplies &gt;6M people); serves <strong>Eastern half</strong> of Metro Manila.</li>
+                <li><strong>Combined Total Capacity:</strong> 2,400 + 1,600 = <strong>4,000 MLD</strong> (million liters per day).</li>
+              </ul>
+            </div>
+          `
+        },
+        {
+          module: 4, page: 'pp. 47–52', title: 'Philippine Water Agencies, Laws & Privatization',
+          content: `
+            <div class="space-y-2.5 text-slate-700 dark:text-slate-300">
+              <p><strong>MWSS:</strong> Created by <strong>RA 6234</strong> (June 19, 1971), dissolving NAWASA.</p>
+              <p><strong>5 Problems Driving Privatization:</strong> (1) Poor Coverage (69%), (2) Inefficient service (16 hrs/day, low pressure), (3) Highest <strong>NRW</strong> in Asia (caused by: <em>meter tampering, illegal connections, pipeline leaks, illegal fire hydrant use</em>), (4) Low Sewerage (~8% pop, &lt;7% households), (5) Rigid Procurement procedures.</p>
+              <p><strong>RA 8041 (1997) – The Water Crisis Act:</strong> Paved way for 25-year Concession Agreement (Aug 1997). <strong>4 Objectives:</strong> (1) Transfer financial burden to private sector, (2) Improve service standards, (3) Increase operational efficiency, (4) Minimize tariff impact.</p>
+              <p><strong>MWSS Offices:</strong> <strong>Corporate Office (CO)</strong> manages retained assets &amp; Umiray-Angat Transbasin Project; <strong>Regulatory Office (RO)</strong> implements Concession Agreement provisions.</p>
+              <p><strong>Manila Water (MWCI – East Zone):</strong> 23 cities/munis (Makati, Mandaluyong, Pasig, Pateros, San Juan, Taguig, Marikina, most QC, parts Manila, Rizal towns). Extended +15 yrs in <strong>2009</strong> (to May 2037). Subsidiaries: <strong>MWPV</strong> (domestic), <strong>MWAP</strong> (Vietnam/international), <strong>MWTS</strong> (after-the-meter &amp; Healthy Family Purified Water).</p>
+              <p><strong>Maynilad (MWSI – West Zone):</strong> 17 cities/munis (Manila, west QC, west Makati, Caloocan, Pasay, Parañaque, Las Piñas, Muntinlupa, Valenzuela, Navotas, Malabon + Cavite). Originally Benpres + Suez &rarr; ceded to MWSS in <strong>2005</strong> (Asian crisis &amp; El Niño) &rarr; <strong>DMCI-MPIC Water Co.</strong> won <strong>83.96%</strong> (took over Jan 24, 2007) &rarr; <strong>Marubeni Corp. (Japan)</strong> acquired <strong>20%</strong> in 2013. Extended +15 yrs in <strong>2010</strong>.</p>
+              <p><strong>LWUA (Outside Metro Manila):</strong> Created by <strong>PD 198</strong> (May 25, 1973 – Provincial Water Utilities Act). GOCC lending institution. Service levels: <strong>Level I</strong> (communal well), <strong>Level II</strong> (communal faucet via RWSAs, expanded in <strong>1987</strong>), <strong>Level III</strong> (individual household connection — full expertise).</p>
+            </div>
+          `
+        },
+        {
+          module: 4, page: 'pp. 52–54', title: '8 Water Treatment Processes (Potable Water)',
+          content: `
+            <ol class="list-decimal pl-5 space-y-1 text-slate-700 dark:text-slate-300">
+              <li><strong>Screening:</strong> Large intake screens block sticks, logs, leaves, fish, trash from dams.</li>
+              <li><strong>Pre-Chlorination:</strong> Adds chlorine to kill harmful pathogens (repeated at end).</li>
+              <li><strong>Rapid Mixing:</strong> Vigorous mixing disperses coagulants (Aluminum Sulfate &amp; Polymer) to form pinhead-sized <em>floc</em>.</li>
+              <li><strong>Flocculation:</strong> Gentle mixing agglomerates particles into heavy clumps; <strong>polymers</strong> catch stubborn particles.</li>
+              <li><strong>Coagulation:</strong> Uses coagulants—most common is <strong>Aluminum Sulfate / Alum, Al₂(SO₄)₃</strong> (also polyaluminium chloride, ferric chloride, ferric sulfate).</li>
+              <li><strong>Sedimentation:</strong> Heavy insoluble solids (sand, dirt) settle by gravity; clear water drawn from top.</li>
+              <li><strong>Filtration:</strong> Gravity filtration through sand &amp; gravel; cleaned by forcing clean water <strong>upward through the under-drain pipe</strong>.</li>
+              <li><strong>Disinfection:</strong> <strong>Chlorine (Cl₂)</strong> kills serious disease-causing bacteria affordably.</li>
+            </ol>
+          `
+        },
+        {
+          module: 5, page: 'pp. 55–56', title: 'Wastewater Basics, Stages & 4 Sewer Pipes',
+          content: `
+            <div class="space-y-3 text-slate-700 dark:text-slate-300">
+              <p><strong>3 Removal Processes:</strong> Chemical, Biological, and Physical. <strong>3 Sewage Categories:</strong> Domestic, Industrial, Storm sewage (stormwater). <strong>Greywater</strong> (sinks/showers) can water plants or flush toilets when separated from blackwater.</p>
+              <p><strong>3 Conventional Stages:</strong> <strong>Primary</strong> (basin settling heavy solids + floating oil/grease), <strong>Secondary</strong> (water-borne micro-organisms remove biological matter), <strong>Tertiary</strong> (physical/chemical disinfection for reuse in parks, golf courses, or groundwater recharge).</p>
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs border-collapse border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                  <thead class="bg-slate-100 dark:bg-slate-800">
+                    <tr>
+                      <th class="p-2 text-left border border-slate-200 dark:border-slate-700">Pipe (Old &rarr; New)</th>
+                      <th class="p-2 text-left border border-slate-200 dark:border-slate-700">Key Traits &amp; Pros/Cons</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td class="p-2 font-bold border border-slate-200 dark:border-slate-700">1. Clay Sewer Pipes</td><td class="p-2 border border-slate-200 dark:border-slate-700">Does NOT degrade from chemicals; heavy, hard to cut, prone to breaking from tree roots.</td></tr>
+                    <tr><td class="p-2 font-bold border border-slate-200 dark:border-slate-700">2. Orangeburg Pipe</td><td class="p-2 border border-slate-200 dark:border-slate-700">Wood fibers + water-resistant adhesive; light/easy to cut, NOT durable (&lt;50 yrs lifespan), not viable today.</td></tr>
+                    <tr><td class="p-2 font-bold border border-slate-200 dark:border-slate-700">3. Cast Iron Pipes</td><td class="p-2 border border-slate-200 dark:border-slate-700">"About as strong as you can get"; heavy, expensive, requires special tools to cut.</td></tr>
+                    <tr><td class="p-2 font-bold border border-slate-200 dark:border-slate-700">4. PVC &amp; ABS</td><td class="p-2 border border-slate-200 dark:border-slate-700">Plastic, inexpensive, resists roots. <strong>PVC = white (more flexible)</strong>; <strong>ABS = black (stronger)</strong>.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `
+        },
+        {
+          module: 5, page: 'pp. 57–61', title: '8 Wastewater Treatment Steps, Sludge & PH Drainage',
+          content: `
+            <ol class="list-decimal pl-5 space-y-1 text-slate-700 dark:text-slate-300 mb-3">
+              <li><strong>Screening and Pumping:</strong> Removes rags, wood fragments, plastics, grease (washed/pressed to landfill).</li>
+              <li><strong>Grit Removal:</strong> Removes heavy fine sand &amp; gravel (to landfill).</li>
+              <li><strong>Primary Settling:</strong> Circular <strong>clarifiers</strong> settle primary sludge; grease skimmed to digesters; chemicals added to remove <strong>phosphorus</strong>.</li>
+              <li><strong>Aeration / Activated Sludge:</strong> Receives <strong>most of its treatment</strong>; microorganisms biologically degrade pollutants into <strong>cell tissue, water, and nitrogen</strong>.</li>
+              <li><strong>Secondary Settling:</strong> Secondary clarifiers yield <strong>&gt;90% treated</strong> effluent; activated sludge is <strong>returned to Step 4</strong> aeration tanks.</li>
+              <li><strong>Filtration:</strong> Polished via <strong>10-micron polyester</strong> disc filters; backwashed to head of plant.</li>
+              <li><strong>Disinfection:</strong> <strong>Ultraviolet (UV)</strong> disinfection kills remaining bacteria to permit levels.</li>
+              <li><strong>Oxygen Uptake:</strong> Aerated to raise dissolved oxygen to permit level; discharged to river with <strong>98% or greater</strong> pollutant removal.</li>
+            </ol>
+            <p class="text-slate-700 dark:text-slate-300 mb-2"><strong>Sludge Treatment:</strong> Treats primary sludge (Step 3) + waste activated sludge (Step 4) to reduce volume and create a usable end product.</p>
+            <p class="text-slate-700 dark:text-slate-300"><strong>Philippine Drainage (p. 61):</strong> No separate stormwater &amp; sewerage systems (septic waste mixes with stormwater); <strong>local government</strong> handles installation &amp; maintenance; greywater enters untreated; open concrete ditches are smelly but cheaper &amp; easier to clear than sidewalk-covered channels.</p>
+          `
+        }
+      ];
+
+      /* ===================================================================
+         3. RANKS & BADGE DEFINITIONS
+         =================================================================== */
+      const RANKS = [
+        { minXP: 0, title: 'Water Apprentice', icon: '💧' },
+        { minXP: 100, title: 'Field Technician', icon: '🔧' },
+        { minXP: 250, title: 'Treatment Specialist', icon: '🧪' },
+        { minXP: 450, title: 'Hydro Engineer', icon: '⚙️' },
+        { minXP: 700, title: 'Eco-Master', icon: '🌍' }
+      ];
+
+      const BADGE_DEFS = [
+        { id: 'first_correct', icon: '🌟', name: 'First Drop', desc: 'Answer your first question correctly.' },
+        { id: 'streak_5', icon: '🔥', name: 'Flow State (5+)', desc: 'Reach a streak of 5 correct answers in a row.' },
+        { id: 'rmw_strategist', icon: '🛡️', name: 'RMW Strategist', desc: 'Safely skip a True/False item to dodge a penalty.' },
+        { id: 'enum_master', icon: '📝', name: 'Enumeration Ace', desc: 'Score 100% on any Enumeration question.' },
+        { id: 'active_learner', icon: '📖', name: 'Active Scholar', desc: 'Review 3+ module excerpts after missing questions.' },
+        { id: 'set_finisher', icon: '🏆', name: 'Set Conqueror', desc: 'Check all 25 questions in any full set.' }
+      ];
+
+      /* ===================================================================
+         4. STATE MANAGEMENT & LOCALSTORAGE PERSISTENCE
+         =================================================================== */
+      const STORAGE_KEY = 'pup_ensc20123_m4m5_exam_v1';
+
+      function defaultState() {
+        return {
+          xp: 0,
+          streak: 0,
+          bestStreak: 0,
+          reviewedCount: 0,
+          soundEnabled: true,
+          darkMode: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
+          activeSet: 'A',
+          currentIndex: 0,
+          missedIds: [],
+          badges: [],
+          mixIds: [],
+          // Per-set progress: { [setKey]: { [qId]: { checked, userAnswer, score, maxScore, status, skippedSafe, flagged, reviewed, shuffledChoices, enumResults } } }
+          sets: { A: {}, B: {}, C: {}, MIX: {}, DRILL: {} }
+        };
+      }
+
+      let state = loadState();
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return defaultState();
+          const parsed = JSON.parse(raw);
+          const merged = { ...defaultState(), ...parsed };
+          merged.sets = { A: {}, B: {}, C: {}, MIX: {}, DRILL: {}, ...(parsed.sets || {}) };
+          return merged;
+        } catch (e) {
+          return defaultState();
+        }
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (e) {
+          // Gracefully ignore storage quota / privacy mode errors
+        }
+      }
+
+      /* ===================================================================
+         5. WEB AUDIO API SOUND EFFECTS (100% OFFLINE)
+         =================================================================== */
+      let audioCtx = null;
+      function getAudioContext() {
+        try {
+          if (!audioCtx) {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (AudioContextClass) audioCtx = new AudioContextClass();
+          }
+          if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+          return audioCtx;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function playSound(type) {
+        if (!state.soundEnabled) return;
+        const ctx = getAudioContext();
+        if (!ctx) return;
+
+        try {
+          const now = ctx.currentTime;
+          if (type === 'correct') {
+            [523.25, 659.25].forEach((freq, idx) => {
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+              gain.gain.setValueAtTime(0.001, now + idx * 0.08);
+              gain.gain.exponentialRampToValueAtTime(0.12, now + idx * 0.08 + 0.02);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.25);
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.start(now + idx * 0.08);
+              osc.stop(now + idx * 0.08 + 0.26);
+            });
+          } else if (type === 'wrong') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(210, now);
+            osc.frequency.exponentialRampToValueAtTime(145, now + 0.22);
+            gain.gain.setValueAtTime(0.11, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.25);
+          } else if (type === 'fanfare') {
+            [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(freq, now + idx * 0.075);
+              gain.gain.setValueAtTime(0.001, now + idx * 0.075);
+              gain.gain.exponentialRampToValueAtTime(0.13, now + idx * 0.075 + 0.02);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.075 + 0.35);
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.start(now + idx * 0.075);
+              osc.stop(now + idx * 0.075 + 0.36);
+            });
+          } else if (type === 'review') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(440, now);
+            osc.frequency.exponentialRampToValueAtTime(587.33, now + 0.14);
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.19);
+          }
+        } catch (e) {
+          // Ignore audio errors
+        }
+      }
+
+      /* ===================================================================
+         6. CONFETTI CANVAS ENGINE (RESPONSIVE, ON-DEMAND)
+         =================================================================== */
+      const confettiCanvas = document.getElementById('confettiCanvas');
+      const confettiCtx = confettiCanvas.getContext('2d');
+      let confettiParticles = [];
+      let confettiAnimating = false;
+
+      function resizeConfettiCanvas() {
+        confettiCanvas.width = window.innerWidth;
+        confettiCanvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resizeConfettiCanvas);
+      resizeConfettiCanvas();
+
+      function launchConfetti(count = 55) {
+        const colors = ['#14b8a6', '#10b981', '#0ea5e9', '#f59e0b', '#ec4899', '#8b5cf6'];
+        for (let i = 0; i < count; i++) {
+          confettiParticles.push({
+            x: window.innerWidth * (0.25 + Math.random() * 0.5),
+            y: window.innerHeight * 0.35,
+            vx: (Math.random() - 0.5) * 11,
+            vy: -Math.random() * 11 - 3,
+            size: Math.random() * 7 + 4,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * Math.PI * 2,
+            vRot: (Math.random() - 0.5) * 0.25,
+            life: 1
+          });
+        }
+        if (!confettiAnimating) {
+          confettiAnimating = true;
+          requestAnimationFrame(animateConfetti);
+        }
+      }
+
+      function animateConfetti() {
+        confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        confettiParticles = confettiParticles.filter(p => p.life > 0 && p.y < confettiCanvas.height + 20);
+        for (const p of confettiParticles) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.32;
+          p.rotation += p.vRot;
+          p.life -= 0.014;
+          confettiCtx.save();
+          confettiCtx.globalAlpha = Math.max(0, p.life);
+          confettiCtx.translate(p.x, p.y);
+          confettiCtx.rotate(p.rotation);
+          confettiCtx.fillStyle = p.color;
+          confettiCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
+          confettiCtx.restore();
+        }
+        if (confettiParticles.length > 0) {
+          requestAnimationFrame(animateConfetti);
+        } else {
+          confettiAnimating = false;
+          confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        }
+      }
+
+      /* ===================================================================
+         7. HELPER UTILITIES (SHUFFLE, FUZZY ENUM MATCHING, TOASTS, BADGES)
+         =================================================================== */
+      function shuffleArray(arr) {
+        const copy = [...arr];
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      }
+
+      function generateRandomMix() {
+        const allTF = ALL_QUESTIONS.filter(q => q.type === 'tf');
+        const allID = ALL_QUESTIONS.filter(q => q.type === 'id');
+        const allEnum = ALL_QUESTIONS.filter(q => q.type === 'enum');
+        const chosen = [
+          ...shuffleArray(allTF).slice(0, 10),
+          ...shuffleArray(allID).slice(0, 10),
+          ...shuffleArray(allEnum).slice(0, 5)
+        ];
+        state.mixIds = chosen.map(q => q.id);
+        state.sets.MIX = {};
+        state.currentIndex = 0;
+        saveState();
+      }
+
+      function getCurrentQuestions() {
+        const key = state.activeSet;
+        if (key === 'A' || key === 'B' || key === 'C') return QUESTION_BANK[key];
+        if (key === 'MIX') {
+          if (!state.mixIds || state.mixIds.length !== 25) generateRandomMix();
+          return state.mixIds.map(id => QUESTION_BY_ID[id]).filter(Boolean);
+        }
+        if (key === 'DRILL') {
+          return state.missedIds.map(id => QUESTION_BY_ID[id]).filter(Boolean);
+        }
+        return QUESTION_BANK.A;
+      }
+
+      function getRecord(setKey, q) {
+        if (!state.sets[setKey]) state.sets[setKey] = {};
+        if (!state.sets[setKey][q.id]) {
+          state.sets[setKey][q.id] = {
+            checked: false,
+            userAnswer: q.type === 'enum' ? Array(q.items.length).fill('') : null,
+            score: 0,
+            maxScore: q.type === 'enum' ? q.items.length : 1,
+            status: 'unanswered', // unanswered | correct | incorrect | partial | skipped
+            skippedSafe: false,
+            flagged: false,
+            reviewed: false,
+            shuffledChoices: q.type === 'id' ? shuffleArray(q.choices) : null,
+            enumResults: null
+          };
+        }
+        return state.sets[setKey][q.id];
+      }
+
+      // Normalize string for resilient enumeration matching
+      function normalizeText(str) {
+        return String(str || '')
+          .toLowerCase()
+          .replace(/₂/g, '2')
+          .replace(/₃/g, '3')
+          .replace(/₄/g, '4')
+          .replace(/[^a-z0-9\s]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      // Levenshtein distance for minor typo forgiveness
+      function levenshtein(a, b) {
+        if (a === b) return 0;
+        if (!a.length) return b.length;
+        if (!b.length) return a.length;
+        const matrix = Array.from({ length: b.length + 1 }, (_, i) => [i]);
+        for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+        for (let i = 1; i <= b.length; i++) {
+          for (let j = 1; j <= a.length; j++) {
+            const cost = b[i - 1] === a[j - 1] ? 0 : 1;
+            matrix[i][j] = Math.min(
+              matrix[i - 1][j] + 1,
+              matrix[i][j - 1] + 1,
+              matrix[i - 1][j - 1] + cost
+            );
+          }
+        }
+        return matrix[b.length][a.length];
+      }
+
+      function checkKeywordMatch(userNorm, kwNorm, allowFuzzy) {
+        if (!userNorm || !kwNorm) return false;
+        if (userNorm === kwNorm) return true;
+
+        // Word-boundary or strong substring match
+        const userWords = userNorm.split(' ');
+        const kwWords = kwNorm.split(' ');
+
+        if (kwNorm.length >= 3 && userNorm.includes(kwNorm)) {
+          // Ensure short keywords like 'ipo' or 'tap' or 'pvc' match as whole words
+          if (kwNorm.length <= 4) {
+            if (userWords.includes(kwNorm)) return true;
+          } else {
+            return true;
+          }
+        }
+
+        // If user typed a substantial core keyword inside a longer phrase
+        if (userNorm.length >= 4 && kwNorm.includes(userNorm) && kwWords.includes(userNorm)) {
+          return true;
+        }
+
+        if (!allowFuzzy) return false;
+
+        // Fuzzy Levenshtein on full phrase
+        const maxDist = kwNorm.length >= 8 ? 2 : (kwNorm.length >= 4 ? 1 : 0);
+        if (maxDist > 0 && levenshtein(userNorm, kwNorm) <= maxDist) return true;
+
+        // Fuzzy match on individual words when keyword is single word
+        if (kwWords.length === 1 && kwNorm.length >= 5) {
+          for (const w of userWords) {
+            if (w.length >= 4 && levenshtein(w, kwNorm) <= (kwNorm.length >= 8 ? 2 : 1)) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      /**
+       * Order-independent, duplicate-preventing enumeration grader.
+       * Uses two passes (exact/substring first, then typo-tolerant fuzzy)
+       * so duplicate entries never earn double credit.
+       */
+      function gradeEnumeration(userInputs, expectedItems) {
+        const matchedExpected = new Set();
+        const results = userInputs.map(val => ({
+          raw: val.trim(),
+          norm: normalizeText(val),
+          matchedIndex: -1,
+          isDuplicate: false
+        }));
+
+        // Pass 1: Exact / clean keyword matches
+        results.forEach(res => {
+          if (!res.norm || res.norm.length < 2) return;
+          for (let j = 0; j < expectedItems.length; j++) {
+            if (matchedExpected.has(j)) continue;
+            const kws = expectedItems[j].keywords.map(normalizeText);
+            if (kws.some(kw => checkKeywordMatch(res.norm, kw, false))) {
+              res.matchedIndex = j;
+              matchedExpected.add(j);
+              break;
+            }
+          }
+        });
+
+        // Pass 2: Fuzzy typo-tolerant matches for remaining inputs
+        results.forEach(res => {
+          if (res.matchedIndex !== -1 || !res.norm || res.norm.length < 3) return;
+          for (let j = 0; j < expectedItems.length; j++) {
+            if (matchedExpected.has(j)) continue;
+            const kws = expectedItems[j].keywords.map(normalizeText);
+            if (kws.some(kw => checkKeywordMatch(res.norm, kw, true))) {
+              res.matchedIndex = j;
+              matchedExpected.add(j);
+              break;
+            }
+          }
+        });
+
+        // Pass 3: Detect if an unmatched input was a duplicate of an already-matched item
+        results.forEach(res => {
+          if (res.matchedIndex !== -1 || !res.norm) return;
+          for (const j of matchedExpected) {
+            const kws = expectedItems[j].keywords.map(normalizeText);
+            if (kws.some(kw => checkKeywordMatch(res.norm, kw, true))) {
+              res.isDuplicate = true;
+              break;
+            }
+          }
+        });
+
+        return {
+          score: matchedExpected.size,
+          maxScore: expectedItems.length,
+          matchedIndices: Array.from(matchedExpected),
+          inputResults: results
+        };
+      }
+
+      function getRankForXP(xp) {
+        let rank = RANKS[0];
+        for (const r of RANKS) {
+          if (xp >= r.minXP) rank = r;
+        }
+        return rank;
+      }
+
+      function showToast(message, variant = 'xp') {
+        const container = document.getElementById('toastContainer');
+        const el = document.createElement('div');
+        const styles = {
+          xp: 'bg-emerald-600 text-white shadow-emerald-600/30',
+          badge: 'bg-amber-500 text-slate-950 shadow-amber-500/30',
+          rank: 'bg-gradient-to-r from-teal-600 to-cyan-600 text-white shadow-teal-600/30',
+          info: 'bg-slate-800 text-white shadow-slate-900/30'
+        };
+        el.className = `px-3.5 py-2 rounded-xl text-xs font-extrabold shadow-lg animate-xp ${styles[variant] || styles.xp}`;
+        el.textContent = message;
+        container.appendChild(el);
+        setTimeout(() => el.remove(), 1850);
+      }
+
+      function awardXP(amount, reasonText) {
+        const prevRank = getRankForXP(state.xp);
+        state.xp += amount;
+        const nextRank = getRankForXP(state.xp);
+        showToast(`+${amount} XP ${reasonText ? '• ' + reasonText : ''}`, 'xp');
+        if (nextRank.title !== prevRank.title) {
+          setTimeout(() => {
+            showToast(`🎉 Rank Up: ${nextRank.icon} ${nextRank.title}!`, 'rank');
+            playSound('fanfare');
+            launchConfetti(80);
+          }, 350);
+        }
+      }
+
+      function unlockBadge(badgeId) {
+        if (state.badges.includes(badgeId)) return;
+        state.badges.push(badgeId);
+        const def = BADGE_DEFS.find(b => b.id === badgeId);
+        if (def) {
+          setTimeout(() => showToast(`🏅 Badge Unlocked: ${def.icon} ${def.name}`, 'badge'), 250);
+        }
+      }
+
+      function addToMissedDrill(qId) {
+        if (!state.missedIds.includes(qId)) {
+          state.missedIds.push(qId);
+        }
+      }
+
+      function removeFromMissedDrill(qId) {
+        state.missedIds = state.missedIds.filter(id => id !== qId);
+      }
+
+      function getPUPGradeEquivalent(percent) {
+        if (percent >= 96) return { gpe: '1.00', desc: 'Excellent' };
+        if (percent >= 92) return { gpe: '1.25', desc: 'Excellent' };
+        if (percent >= 88) return { gpe: '1.50', desc: 'Very Good' };
+        if (percent >= 84) return { gpe: '1.75', desc: 'Very Good' };
+        if (percent >= 80) return { gpe: '2.00', desc: 'Good' };
+        if (percent >= 75) return { gpe: '2.25', desc: 'Good' };
+        if (percent >= 70) return { gpe: '2.50', desc: 'Satisfactory' };
+        if (percent >= 65) return { gpe: '2.75', desc: 'Satisfactory' };
+        if (percent >= 60) return { gpe: '3.00', desc: 'Passing' };
+        return { gpe: '5.00', desc: 'Needs Review' };
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      /* ===================================================================
+         8. RENDERING FUNCTIONS (HUD, TABS, QUESTION, FEEDBACK, NAVIGATOR)
+         =================================================================== */
+      function applyTheme() {
+        const root = document.documentElement;
+        if (state.darkMode) {
+          root.classList.add('dark');
+          document.getElementById('themeIcon').textContent = '☀️';
+        } else {
+          root.classList.remove('dark');
+          document.getElementById('themeIcon').textContent = '🌙';
+        }
+        document.getElementById('soundIcon').textContent = state.soundEnabled ? '🔊' : '🔇';
+      }
+
+      function renderHUD() {
+        const rank = getRankForXP(state.xp);
+        document.getElementById('hudRankIcon').textContent = rank.icon;
+        document.getElementById('hudRankTitle').textContent = rank.title;
+        document.getElementById('hudXP').textContent = `${state.xp} XP`;
+        document.getElementById('hudStreak').textContent = state.streak;
+        document.getElementById('drillCountBadge').textContent = state.missedIds.length;
+
+        // Highlight active set tab
+        document.querySelectorAll('.set-tab').forEach(btn => {
+          const isActive = btn.dataset.set === state.activeSet;
+          if (isActive) {
+            btn.className = 'set-tab shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition border bg-teal-600 text-white border-teal-600 shadow-sm flex items-center gap-1.5';
+          } else {
+            btn.className = 'set-tab shrink-0 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition border bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-1.5';
+          }
+        });
+      }
+
+      function renderSpecialBar(questions) {
+        const bar = document.getElementById('specialModeBar');
+        const text = document.getElementById('specialModeText');
+        const btn = document.getElementById('btnSpecialAction');
+
+        if (state.activeSet === 'MIX') {
+          bar.classList.remove('hidden');
+          text.innerHTML = '🎲 <strong>Random Mix Mode:</strong> Balanced 25-question shuffle (10 T/F RMW, 10 Identification, 5 Enumeration) drawn across Modules 4 &amp; 5.';
+          btn.textContent = '↻ Generate New Shuffle';
+          btn.onclick = () => {
+            openConfirmModal(
+              'Generate New Random Mix?',
+              'This will create a fresh 25-question mix from the 75-item bank and reset your current Random Mix progress.',
+              () => {
+                generateRandomMix();
+                renderAll();
+                showToast('New 25-question Random Mix generated!', 'info');
+              }
+            );
+          };
+        } else if (state.activeSet === 'DRILL' && questions.length > 0) {
+          bar.classList.remove('hidden');
+          text.innerHTML = `🎯 <strong>Missed Items Active Recall Drill:</strong> Re-test ${questions.length} item${questions.length > 1 ? 's' : ''} you missed or flagged for review. Get an item 100% right to master it!`;
+          btn.textContent = '↺ Reset Drill Attempts';
+          btn.onclick = () => {
+            state.sets.DRILL = {};
+            state.currentIndex = 0;
+            saveState();
+            renderAll();
+          };
+        } else {
+          bar.classList.add('hidden');
+        }
+      }
+
+      function renderQuestion() {
+        const questions = getCurrentQuestions();
+        const examCard = document.getElementById('examCard');
+        const emptyDrill = document.getElementById('emptyDrillState');
+
+        renderSpecialBar(questions);
+
+        if (questions.length === 0) {
+          examCard.classList.add('hidden');
+          emptyDrill.classList.remove('hidden');
+          return;
+        }
+        examCard.classList.remove('hidden');
+        emptyDrill.classList.add('hidden');
+
+        if (state.currentIndex >= questions.length) state.currentIndex = questions.length - 1;
+        if (state.currentIndex < 0) state.currentIndex = 0;
+
+        const q = questions[state.currentIndex];
+        const rec = getRecord(state.activeSet, q);
+
+        // Section Banner
+        const secBadge = document.getElementById('sectionBadge');
+        const secRule = document.getElementById('sectionRuleText');
+        if (q.type === 'tf') {
+          secBadge.className = 'inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-extrabold tracking-wide uppercase bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200';
+          secBadge.textContent = 'Part I: True or False';
+          secRule.textContent = 'Right Minus Wrong (+1 Correct / −1 Wrong / 0 Skip)';
+        } else if (q.type === 'id') {
+          secBadge.className = 'inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-extrabold tracking-wide uppercase bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-200';
+          secBadge.textContent = 'Part II: Identification';
+          secRule.textContent = 'Multiple Choice (+1 pt each)';
+        } else {
+          secBadge.className = 'inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-extrabold tracking-wide uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200';
+          secBadge.textContent = 'Part III: Enumeration';
+          secRule.textContent = `1 pt per correct item (${q.items.length} pts total)`;
+        }
+
+        document.getElementById('modulePageTag').textContent = `Module ${q.module} • ${q.page}`;
+        document.getElementById('questionCounter').textContent = `Question ${state.currentIndex + 1} of ${questions.length}`;
+        document.getElementById('questionText').textContent = q.question;
+
+        // Status pill
+        const statusPill = document.getElementById('statusPill');
+        if (rec.checked) {
+          statusPill.classList.remove('hidden');
+          if (rec.status === 'correct') {
+            statusPill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200';
+            statusPill.textContent = q.type === 'enum' ? `✓ Perfect (${rec.score}/${rec.maxScore})` : '✓ Correct (+1 pt)';
+          } else if (rec.status === 'partial') {
+            statusPill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-100 text-orange-800 dark:bg-orange-900/60 dark:text-orange-200';
+            statusPill.textContent = `◐ Partial (${rec.score}/${rec.maxScore} pts)`;
+          } else if (rec.status === 'skipped') {
+            statusPill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200';
+            statusPill.textContent = '🛡️ Safe Skip (0 pts)';
+          } else {
+            statusPill.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200';
+            statusPill.textContent = q.type === 'tf' ? '✕ Incorrect (−1 pt)' : '✕ Incorrect (0 pts)';
+          }
+        } else {
+          statusPill.classList.add('hidden');
+        }
+
+        // Flag button visual state
+        const flagBtn = document.getElementById('btnFlagQuestion');
+        document.getElementById('flagLabel').textContent = rec.flagged ? 'Flagged for Review' : 'Flag / Skip for Later';
+        if (rec.flagged) {
+          flagBtn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-amber-400 bg-amber-50 dark:bg-amber-950/50 dark:border-amber-600 text-amber-800 dark:text-amber-200 transition active:scale-95';
+        } else {
+          flagBtn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 hover:bg-amber-50 hover:border-amber-300 dark:hover:bg-amber-950/40 dark:hover:border-amber-700 text-slate-600 dark:text-slate-300 transition active:scale-95';
+        }
+
+        // Render Interactive Controls
+        const answerArea = document.getElementById('answerArea');
+        answerArea.innerHTML = '';
+
+        if (q.type === 'tf') {
+          renderTrueFalseControls(answerArea, q, rec);
+        } else if (q.type === 'id') {
+          renderIdentificationControls(answerArea, q, rec);
+        } else {
+          renderEnumerationControls(answerArea, q, rec);
+        }
+
+        // Navigation buttons state
+        document.getElementById('btnPrev').disabled = state.currentIndex === 0;
+        document.getElementById('btnNext').disabled = state.currentIndex === questions.length - 1;
+
+        const btnCheck = document.getElementById('btnCheck');
+        if (rec.checked) {
+          btnCheck.disabled = true;
+          btnCheck.innerHTML = '<span>✓</span> Checked';
+        } else {
+          btnCheck.disabled = false;
+          btnCheck.innerHTML = '<span>✓</span> Check Answer';
+        }
+
+        // Feedback Panel
+        renderFeedback(q, rec);
+      }
+
+      function renderTrueFalseControls(container, q, rec) {
+        const grid = document.createElement('div');
+        grid.className = 'grid grid-cols-1 sm:grid-cols-2 gap-3';
+
+        [true, false].forEach(val => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.disabled = rec.checked;
+          const isSelected = rec.userAnswer === val && !rec.skippedSafe;
+
+          let cls = 'p-4 rounded-2xl border-2 text-left flex items-center justify-between transition font-bold text-base ';
+          if (rec.checked) {
+            if (val === q.answer) {
+              cls += 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100';
+            } else if (isSelected && val !== q.answer) {
+              cls += 'border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-100';
+            } else {
+              cls += 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 text-slate-400 opacity-60';
+            }
+          } else {
+            if (isSelected) {
+              cls += 'border-teal-600 bg-teal-50 dark:bg-teal-950/50 text-teal-900 dark:text-teal-100 ring-2 ring-teal-500/20';
+            } else {
+              cls += 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 hover:border-teal-400 dark:hover:border-teal-500 text-slate-800 dark:text-slate-100 active:scale-[0.99]';
+            }
+          }
+          btn.className = cls;
+
+          const label = val ? 'TRUE' : 'FALSE';
+          const icon = val ? '✓' : '✕';
+          btn.innerHTML = `
+            <span class="flex items-center gap-3">
+              <span class="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black ${val ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-200' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-200'}">${icon}</span>
+              <span>${label}</span>
+            </span>
+            ${isSelected ? '<span class="text-xs font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-md bg-teal-600 text-white">Selected</span>' : ''}
+          `;
+
+          btn.addEventListener('click', () => {
+            if (rec.checked) return;
+            rec.userAnswer = val;
+            rec.skippedSafe = false;
+            saveState();
+            renderQuestion();
+          });
+          grid.appendChild(btn);
+        });
+
+        container.appendChild(grid);
+
+        // Explicit Safe Skip button for RMW Strategy
+        const skipBtn = document.createElement('button');
+        skipBtn.type = 'button';
+        skipBtn.disabled = rec.checked;
+        skipBtn.className = `w-full mt-2 p-3 rounded-2xl border-2 border-dashed flex items-center justify-center gap-2 text-xs sm:text-sm font-bold transition ${
+          rec.skippedSafe
+            ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-100'
+            : 'border-slate-300 dark:border-slate-700 hover:border-amber-400 hover:bg-amber-50/60 dark:hover:bg-amber-950/30 text-slate-600 dark:text-slate-300'
+        } disabled:opacity-60 disabled:cursor-not-allowed`;
+        skipBtn.innerHTML = `<span>🛡️</span> <span>Skip (0 pts – Safe against Right-Minus-Wrong penalty)</span>`;
+        skipBtn.addEventListener('click', () => {
+          if (rec.checked) return;
+          rec.userAnswer = 'SKIP';
+          rec.skippedSafe = true;
+          saveState();
+          evaluateCurrentQuestion();
+        });
+        container.appendChild(skipBtn);
+      }
+
+      function renderIdentificationControls(container, q, rec) {
+        const letters = ['A', 'B', 'C', 'D'];
+        const choices = rec.shuffledChoices || q.choices;
+
+        choices.forEach((choiceText, idx) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.disabled = rec.checked;
+          const isSelected = rec.userAnswer === choiceText;
+          const isCorrectChoice = choiceText === q.answer;
+
+          let cls = 'w-full p-3.5 sm:p-4 rounded-2xl border-2 text-left flex items-center gap-3.5 transition ';
+          if (rec.checked) {
+            if (isCorrectChoice) {
+              cls += 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 font-bold';
+            } else if (isSelected && !isCorrectChoice) {
+              cls += 'border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-950 dark:text-rose-100 font-semibold';
+            } else {
+              cls += 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 text-slate-400 opacity-65';
+            }
+          } else {
+            if (isSelected) {
+              cls += 'border-teal-600 bg-teal-50 dark:bg-teal-950/50 text-teal-950 dark:text-teal-50 font-bold ring-2 ring-teal-500/20';
+            } else {
+              cls += 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 hover:border-teal-400 dark:hover:border-teal-500 text-slate-800 dark:text-slate-100 font-medium active:scale-[0.99]';
+            }
+          }
+          btn.className = cls;
+
+          const badgeCls = isSelected
+            ? 'bg-teal-600 text-white'
+            : (rec.checked && isCorrectChoice ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200');
+
+          btn.innerHTML = `
+            <span class="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center text-xs font-extrabold ${badgeCls}">${letters[idx]}</span>
+            <span class="text-sm sm:text-base flex-1">${escapeHtml(choiceText)}</span>
+            ${rec.checked && isCorrectChoice ? '<span class="text-emerald-600 dark:text-emerald-400 font-extrabold text-sm">✓</span>' : ''}
+            ${rec.checked && isSelected && !isCorrectChoice ? '<span class="text-rose-600 dark:text-rose-400 font-extrabold text-sm">✕</span>' : ''}
+          `;
+
+          btn.addEventListener('click', () => {
+            if (rec.checked) return;
+            rec.userAnswer = choiceText;
+            saveState();
+            renderQuestion();
+          });
+          container.appendChild(btn);
+        });
+      }
+
+      function renderEnumerationControls(container, q, rec) {
+        const helper = document.createElement('p');
+        helper.className = 'text-xs text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1.5';
+        helper.innerHTML = '<span>💡</span> <span>Order does not matter. Minor spelling variations &amp; keywords are accepted; duplicates do not earn double points.</span>';
+        container.appendChild(helper);
+
+        const list = document.createElement('div');
+        list.className = 'grid grid-cols-1 sm:grid-cols-2 gap-2.5';
+
+        q.items.forEach((_, idx) => {
+          const wrap = document.createElement('div');
+          wrap.className = 'relative flex items-center';
+
+          const num = document.createElement('span');
+          num.className = 'absolute left-3 text-xs font-extrabold text-slate-400 dark:text-slate-500 select-none';
+          num.textContent = `${idx + 1}.`;
+
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.autocomplete = 'off';
+          input.placeholder = `Item #${idx + 1}...`;
+          input.value = (rec.userAnswer && rec.userAnswer[idx]) || '';
+          input.disabled = rec.checked;
+
+          let borderStyle = 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500';
+          let badgeHTML = '';
+
+          if (rec.checked && rec.enumResults) {
+            const r = rec.enumResults.inputResults[idx];
+            if (r.matchedIndex !== -1) {
+              borderStyle = 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100 font-semibold';
+              badgeHTML = '<span class="absolute right-3 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold">✓ +1</span>';
+            } else if (r.isDuplicate) {
+              borderStyle = 'border-amber-400 bg-amber-50/70 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100';
+              badgeHTML = '<span class="absolute right-3 text-amber-600 dark:text-amber-400 text-[10px] font-extrabold uppercase">Duplicate</span>';
+            } else {
+              borderStyle = 'border-rose-400 bg-rose-50/70 dark:bg-rose-950/30 text-rose-900 dark:text-rose-100';
+              badgeHTML = '<span class="absolute right-3 text-rose-500 text-xs font-extrabold">✕</span>';
+            }
+          }
+
+          input.className = `w-full pl-8 pr-16 py-2.5 rounded-xl border text-sm transition focus:outline-none ${borderStyle}`;
+
+          input.addEventListener('input', (e) => {
+            if (!Array.isArray(rec.userAnswer)) rec.userAnswer = Array(q.items.length).fill('');
+            rec.userAnswer[idx] = e.target.value;
+            saveState();
+          });
+
+          // Press Enter to move to next input or submit on last input
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const allInputs = list.querySelectorAll('input');
+              if (idx < allInputs.length - 1) {
+                allInputs[idx + 1].focus();
+              } else if (!rec.checked) {
+                evaluateCurrentQuestion();
+              }
+            }
+          });
+
+          wrap.appendChild(num);
+          wrap.appendChild(input);
+          if (badgeHTML) {
+            const b = document.createElement('span');
+            b.innerHTML = badgeHTML;
+            wrap.appendChild(b.firstChild);
+          }
+          list.appendChild(wrap);
+        });
+
+        container.appendChild(list);
+      }
+
+      function renderFeedback(q, rec) {
+        const panel = document.getElementById('feedbackPanel');
+        if (!rec.checked) {
+          panel.classList.add('hidden');
+          panel.innerHTML = '';
+          return;
+        }
+        panel.classList.remove('hidden');
+
+        // Build Enumeration answer breakdown if needed
+        let enumDetailHtml = '';
+        if (q.type === 'enum' && rec.enumResults) {
+          const matchedSet = new Set(rec.enumResults.matchedIndices);
+          enumDetailHtml = `
+            <div class="mt-3 p-3.5 rounded-2xl bg-white/80 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-700">
+              <p class="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Exact Module Answers (${rec.score}/${rec.maxScore} Matched)</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                ${q.items.map((item, i) => {
+                  const hit = matchedSet.has(i);
+                  return `
+                    <div class="flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-lg ${hit ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-200 font-semibold' : 'bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-200 font-semibold'}">
+                      <span>${hit ? '✅' : '❌'}</span>
+                      <span>${escapeHtml(item.label)}</span>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          `;
+        }
+
+        // Case 1: Completely Correct
+        if (rec.status === 'correct') {
+          panel.innerHTML = `
+            <div class="rounded-2xl p-5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                  <span class="text-2xl">🎉</span>
+                  <div>
+                    <h3 class="text-base font-extrabold text-emerald-900 dark:text-emerald-100">
+                      ${q.type === 'enum' ? `Perfect Enumeration! (${rec.score}/${rec.maxScore} pts)` : 'Spot On! Correct Answer'}
+                    </h3>
+                    <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Module ${q.module} &bull; ${escapeHtml(q.section)} (${q.page})</p>
+                  </div>
+                </div>
+                ${state.activeSet === 'DRILL' ? `<button id="btnMasteredRemove" type="button" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition">✓ Mastered (Remove from Drill)</button>` : ''}
+              </div>
+              <p class="mt-3 text-sm text-emerald-950 dark:text-emerald-100/90 leading-relaxed">${escapeHtml(q.explanation)}</p>
+              ${enumDetailHtml}
+            </div>
+          `;
+
+          if (state.activeSet === 'DRILL') {
+            const btnRem = document.getElementById('btnMasteredRemove');
+            if (btnRem) {
+              btnRem.addEventListener('click', () => {
+                removeFromMissedDrill(q.id);
+                delete state.sets.DRILL[q.id];
+                saveState();
+                showToast('Item mastered & removed from Drill!', 'badge');
+                renderAll();
+              });
+            }
+          }
+          return;
+        }
+
+        // Case 2: Safe Skip (T/F)
+        if (rec.status === 'skipped') {
+          const correctText = q.answer ? 'TRUE' : 'FALSE';
+          panel.innerHTML = `
+            <div class="rounded-2xl p-5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 space-y-3">
+              <div class="flex items-center gap-2.5">
+                <span class="text-2xl">🛡️</span>
+                <div>
+                  <h3 class="text-base font-extrabold text-amber-900 dark:text-amber-100">Safely Skipped (0 pts — No RMW Penalty)</h3>
+                  <p class="text-xs font-semibold text-amber-700 dark:text-amber-300">Correct Answer: <strong>${correctText}</strong></p>
+                </div>
+              </div>
+              <p class="text-sm text-slate-800 dark:text-slate-200 leading-relaxed">${escapeHtml(q.explanation)}</p>
+              ${buildModuleGateHtml(q, rec)}
+            </div>
+          `;
+          wireModuleGateButtons(q, rec);
+          return;
+        }
+
+        // Case 3: Incorrect or Partially Correct
+        const isPartial = rec.status === 'partial';
+        const userDisplay = q.type === 'tf'
+          ? (rec.userAnswer ? 'TRUE' : 'FALSE')
+          : (q.type === 'id' ? rec.userAnswer : `${rec.score} of ${rec.maxScore} correct`);
+        const correctDisplay = q.type === 'tf'
+          ? (q.answer ? 'TRUE' : 'FALSE')
+          : (q.type === 'id' ? q.answer : `All ${q.items.length} required items below`);
+
+        panel.innerHTML = `
+          <div class="rounded-2xl p-5 ${isPartial ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800' : 'bg-rose-50 dark:bg-rose-950/35 border-rose-200 dark:border-rose-800'} border space-y-3.5">
+            <div class="flex items-start gap-2.5">
+              <span class="text-2xl">${isPartial ? '🟠' : '❌'}</span>
+              <div>
+                <h3 class="text-base font-extrabold ${isPartial ? 'text-orange-900 dark:text-orange-100' : 'text-rose-900 dark:text-rose-100'}">
+                  ${isPartial ? `Partially Correct (${rec.score}/${rec.maxScore} pts)` : (q.type === 'tf' ? 'Incorrect Answer (−1 pt Right-Minus-Wrong)' : 'Incorrect Answer (0 pts)')}
+                </h3>
+                <div class="mt-1.5 flex flex-wrap gap-2 text-xs">
+                  <span class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 font-semibold">
+                    Your Answer: <strong>${escapeHtml(userDisplay)}</strong>
+                  </span>
+                  <span class="px-2.5 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-100 font-bold">
+                    Correct Answer: <strong>${escapeHtml(correctDisplay)}</strong>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-sm text-slate-800 dark:text-slate-200 leading-relaxed">
+              <strong class="text-slate-900 dark:text-white">Why?</strong> ${escapeHtml(q.explanation)}
+            </div>
+
+            ${enumDetailHtml}
+            ${buildModuleGateHtml(q, rec)}
+          </div>
+        `;
+        wireModuleGateButtons(q, rec);
+      }
+
+      function buildModuleGateHtml(q, rec) {
+        return `
+          <div class="rounded-2xl p-4 bg-white dark:bg-slate-900 border-2 border-teal-500/40 dark:border-teal-600/50 shadow-xs space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-teal-700 dark:text-teal-300">
+                <span>📖</span> Revisit the Module — Active Learning Gate
+              </span>
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950 text-teal-800 dark:text-teal-200">
+                Module ${q.module} &bull; ${escapeHtml(q.section)} &bull; ${q.page}
+              </span>
+            </div>
+            <blockquote class="pl-3.5 border-l-4 border-teal-500 text-xs sm:text-sm italic text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 py-2 pr-3 rounded-r-xl">
+              &ldquo;${escapeHtml(q.excerpt)}&rdquo;
+            </blockquote>
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+              <button id="btnConfirmReview" type="button" ${rec.reviewed ? 'disabled' : ''} class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold transition active:scale-95 ${
+                rec.reviewed
+                  ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 cursor-default'
+                  : 'bg-teal-600 hover:bg-teal-700 text-white shadow-sm'
+              }">
+                <span>${rec.reviewed ? '✅' : '📌'}</span>
+                <span>${rec.reviewed ? 'Module Note Reviewed (+3 XP Earned) & Added to Drill' : "I've Reviewed the Module Note (Mark & Add to Drill) +3 XP"}</span>
+              </button>
+              <button id="btnOpenRefFromGate" type="button" class="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition">
+                <span>🔎</span> Open Full Module ${q.module} Notes
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      function wireModuleGateButtons(q, rec) {
+        const btnRev = document.getElementById('btnConfirmReview');
+        if (btnRev && !rec.reviewed) {
+          btnRev.addEventListener('click', () => {
+            rec.reviewed = true;
+            state.reviewedCount += 1;
+            addToMissedDrill(q.id);
+            awardXP(3, 'Active Module Review');
+            playSound('review');
+            if (state.reviewedCount >= 3) unlockBadge('active_learner');
+            saveState();
+            renderHUD();
+            renderFeedback(q, rec);
+          });
+        }
+        const btnRef = document.getElementById('btnOpenRefFromGate');
+        if (btnRef) {
+          btnRef.addEventListener('click', () => openReviewerModal(String(q.module)));
+        }
+      }
+
+      /* ===================================================================
+         9. EVALUATION & SCORING ENGINE
+         =================================================================== */
+      function evaluateCurrentQuestion() {
+        const questions = getCurrentQuestions();
+        if (!questions.length) return;
+        const q = questions[state.currentIndex];
+        const rec = getRecord(state.activeSet, q);
+        if (rec.checked) return;
+
+        // Validate user provided an answer
+        if (q.type === 'tf' && rec.userAnswer === null) {
+          showToast('Select TRUE, FALSE, or click Safe Skip first!', 'info');
+          return;
+        }
+        if (q.type === 'id' && !rec.userAnswer) {
+          showToast('Please select a choice (A, B, C, or D) first!', 'info');
+          return;
+        }
+        if (q.type === 'enum') {
+          const hasAny = Array.isArray(rec.userAnswer) && rec.userAnswer.some(v => v.trim().length > 0);
+          if (!hasAny) {
+            showToast('Type at least one answer before checking!', 'info');
+            return;
+          }
+        }
+
+        rec.checked = true;
+        rec.flagged = false;
+
+        if (q.type === 'tf') {
+          if (rec.skippedSafe || rec.userAnswer === 'SKIP') {
+            rec.score = 0;
+            rec.status = 'skipped';
+            unlockBadge('rmw_strategist');
+            playSound('review');
+          } else if (rec.userAnswer === q.answer) {
+            rec.score = 1;
+            rec.status = 'correct';
+            handleCorrectReward(false);
+          } else {
+            rec.score = -1; // Right Minus Wrong penalty!
+            rec.status = 'incorrect';
+            handleIncorrectPenalty(q.id);
+          }
+        } else if (q.type === 'id') {
+          if (rec.userAnswer === q.answer) {
+            rec.score = 1;
+            rec.status = 'correct';
+            handleCorrectReward(false);
+          } else {
+            rec.score = 0;
+            rec.status = 'incorrect';
+            handleIncorrectPenalty(q.id);
+          }
+        } else if (q.type === 'enum') {
+          const graded = gradeEnumeration(rec.userAnswer || Array(q.items.length).fill(''), q.items);
+          rec.enumResults = graded;
+          rec.score = graded.score;
+          rec.maxScore = graded.maxScore;
+
+          if (graded.score === graded.maxScore) {
+            rec.status = 'correct';
+            unlockBadge('enum_master');
+            handleCorrectReward(true);
+          } else if (graded.score > 0) {
+            rec.status = 'partial';
+            state.streak = 0;
+            addToMissedDrill(q.id);
+            awardXP(graded.score * 3, `Partial Credit (${graded.score}/${graded.maxScore})`);
+            playSound('wrong');
+          } else {
+            rec.status = 'incorrect';
+            handleIncorrectPenalty(q.id);
+          }
+        }
+
+        // Check if full 25-Q set completed
+        if (questions.length === 25) {
+          const allChecked = questions.every(item => getRecord(state.activeSet, item).checked);
+          if (allChecked) unlockBadge('set_finisher');
+        }
+
+        saveState();
+        renderAll();
+      }
+
+      function handleCorrectReward(isPerfectEnum) {
+        state.streak += 1;
+        if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+        unlockBadge('first_correct');
+        if (state.streak >= 5) unlockBadge('streak_5');
+
+        const streakBonus = state.streak >= 3 ? Math.min(state.streak * 2, 12) : 0;
+        const baseXP = isPerfectEnum ? 15 : 10;
+        awardXP(baseXP + streakBonus, streakBonus ? `Streak 🔥${state.streak}!` : 'Correct!');
+
+        if (isPerfectEnum || state.streak >= 3) {
+          playSound('fanfare');
+          launchConfetti(isPerfectEnum ? 65 : 40);
+        } else {
+          playSound('correct');
+        }
+      }
+
+      function handleIncorrectPenalty(qId) {
+        state.streak = 0;
+        addToMissedDrill(qId);
+        playSound('wrong');
+      }
+
+      /* ===================================================================
+         10. SCOREBOARD & QUESTION NAVIGATOR RENDERING
+         =================================================================== */
+      function computeSetStats(setKey, questions) {
+        let p1Right = 0, p1Wrong = 0, p1Skip = 0, p1Max = 0;
+        let p2Score = 0, p2Max = 0;
+        let p3Score = 0, p3Max = 0;
+        let checkedCount = 0;
+
+        let mod4Score = 0, mod4Max = 0;
+        let mod5Score = 0, mod5Max = 0;
+
+        questions.forEach(q => {
+          const rec = getRecord(setKey, q);
+          const qMax = q.type === 'enum' ? q.items.length : 1;
+          if (q.type === 'tf') p1Max += 1;
+          else if (q.type === 'id') p2Max += 1;
+          else p3Max += qMax;
+
+          if (q.module === 4) mod4Max += qMax;
+          else mod5Max += qMax;
+
+          if (rec.checked) {
+            checkedCount += 1;
+            if (q.type === 'tf') {
+              if (rec.status === 'correct') p1Right += 1;
+              else if (rec.status === 'incorrect') p1Wrong += 1;
+              else if (rec.status === 'skipped') p1Skip += 1;
+            } else if (q.type === 'id') {
+              p2Score += rec.score;
+            } else {
+              p3Score += rec.score;
+            }
+
+            if (q.module === 4) mod4Score += rec.score;
+            else mod5Score += rec.score;
+          }
+        });
+
+        const p1Net = p1Right - p1Wrong;
+        const totalScore = p1Net + p2Score + p3Score;
+        const totalMax = p1Max + p2Max + p3Max;
+        const pct = totalMax > 0 ? Math.max(0, Math.round((totalScore / totalMax) * 100)) : 0;
+
+        return {
+          p1Right, p1Wrong, p1Skip, p1Net, p1Max,
+          p2Score, p2Max,
+          p3Score, p3Max,
+          totalScore, totalMax, pct, checkedCount,
+          mod4Score, mod4Max, mod5Score, mod5Max
+        };
+      }
+
+      function renderNavigatorAndScoreboard() {
+        const questions = getCurrentQuestions();
+        const stats = computeSetStats(state.activeSet, questions);
+
+        // Scoreboard UI
+        const sign = stats.p1Net > 0 ? '+' : '';
+        document.getElementById('scorePart1Detail').textContent = `${stats.p1Right}R − ${stats.p1Wrong}W = ${sign}${stats.p1Net} pts (${stats.p1Skip} skipped)`;
+        document.getElementById('scorePart1Net').textContent = `${stats.p1Net} / ${stats.p1Max}`;
+        document.getElementById('scorePart2').textContent = `${stats.p2Score} / ${stats.p2Max}`;
+        document.getElementById('scorePart3').textContent = `${stats.p3Score} / ${stats.p3Max}`;
+        document.getElementById('scoreOverall').textContent = `${stats.totalScore} / ${stats.totalMax}`;
+        document.getElementById('scorePercentBadge').textContent = `${stats.pct}%`;
+
+        const progressPct = questions.length > 0 ? Math.round((stats.checkedCount / questions.length) * 100) : 0;
+        document.getElementById('progressBarFill').style.width = `${progressPct}%`;
+        document.getElementById('answeredCountLabel').textContent = `${stats.checkedCount} / ${questions.length} checked`;
+
+        // Navigator Grid grouped by Parts
+        const gridContainer = document.getElementById('navigatorGridContainer');
+        gridContainer.innerHTML = '';
+
+        if (questions.length === 0) {
+          gridContainer.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">No questions in current view.</p>';
+          return;
+        }
+
+        const groups = [
+          { title: 'Part I: True / False (RMW)', items: [] },
+          { title: 'Part II: Identification', items: [] },
+          { title: 'Part III: Enumeration', items: [] }
+        ];
+
+        questions.forEach((q, idx) => {
+          const gIdx = q.type === 'tf' ? 0 : (q.type === 'id' ? 1 : 2);
+          groups[gIdx].items.push({ q, idx });
+        });
+
+        groups.forEach(group => {
+          if (group.items.length === 0) return;
+          const sec = document.createElement('div');
+          const lbl = document.createElement('p');
+          lbl.className = 'text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2';
+          lbl.textContent = group.title;
+          sec.appendChild(lbl);
+
+          const grid = document.createElement('div');
+          grid.className = 'grid grid-cols-5 gap-1.5';
+
+          group.items.forEach(({ q, idx }) => {
+            const rec = getRecord(state.activeSet, q);
+            const isCurrent = idx === state.currentIndex;
+            const btn = document.createElement('button');
+            btn.type = 'button';
+
+            let colorCls = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700';
+            let inner = `${idx + 1}`;
+
+            if (rec.checked) {
+              if (rec.status === 'correct') {
+                colorCls = 'bg-emerald-500 text-white hover:bg-emerald-600';
+              } else if (rec.status === 'incorrect') {
+                colorCls = 'bg-rose-500 text-white hover:bg-rose-600';
+                inner = `${idx + 1}<span class="text-[9px] ml-0.5">📖</span>`;
+              } else if (rec.status === 'partial') {
+                colorCls = 'bg-orange-500 text-white hover:bg-orange-600';
+              } else if (rec.status === 'skipped') {
+                colorCls = 'bg-amber-400 text-slate-950 hover:bg-amber-500';
+              }
+            } else if (rec.flagged) {
+              colorCls = 'bg-amber-300 dark:bg-amber-600 text-slate-950 dark:text-white';
+            }
+
+            const ringCls = isCurrent ? 'ring-2 ring-offset-2 ring-teal-500 dark:ring-offset-slate-900 scale-105 font-black' : 'font-bold';
+            btn.className = `h-10 rounded-xl text-xs flex items-center justify-center transition cursor-pointer ${colorCls} ${ringCls}`;
+            btn.innerHTML = inner;
+            btn.title = `Go to Question ${idx + 1} (Module ${q.module}, ${q.page})`;
+            btn.addEventListener('click', () => {
+              state.currentIndex = idx;
+              saveState();
+              renderAll();
+              closeMobileNav();
+            });
+            grid.appendChild(btn);
+          });
+
+          sec.appendChild(grid);
+          gridContainer.appendChild(sec);
+        });
+      }
+
+      function renderAll() {
+        applyTheme();
+        renderHUD();
+        renderQuestion();
+        renderNavigatorAndScoreboard();
+      }
+
+      /* ===================================================================
+         11. QUICK MODULE REVIEWER MODAL
+         =================================================================== */
+      let activeRefTab = 'all';
+
+      function openReviewerModal(filterTab = 'all') {
+        activeRefTab = filterTab;
+        document.getElementById('reviewerSearch').value = '';
+        updateReviewerTabs();
+        renderReviewerContent();
+        document.getElementById('reviewerModal').classList.remove('hidden');
+      }
+
+      function closeReviewerModal() {
+        document.getElementById('reviewerModal').classList.add('hidden');
+      }
+
+      function updateReviewerTabs() {
+        document.querySelectorAll('.ref-tab').forEach(btn => {
+          const active = btn.dataset.refTab === activeRefTab;
+          btn.className = active
+            ? 'ref-tab px-3 py-2 rounded-xl text-xs font-bold bg-teal-600 text-white transition'
+            : 'ref-tab px-3 py-2 rounded-xl text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition';
+        });
+      }
+
+      function renderReviewerContent() {
+        const query = document.getElementById('reviewerSearch').value.trim().toLowerCase();
+        const container = document.getElementById('reviewerContent');
+        const filtered = REVIEWER_SECTIONS.filter(sec => {
+          if (activeRefTab !== 'all' && String(sec.module) !== activeRefTab) return false;
+          if (!query) return true;
+          const plain = (sec.title + ' ' + sec.page + ' ' + sec.content.replace(/<[^>]+>/g, ' ')).toLowerCase();
+          return plain.includes(query);
+        });
+
+        if (filtered.length === 0) {
+          container.innerHTML = `<p class="text-center text-slate-500 py-8">No matching study notes found for &ldquo;${escapeHtml(query)}&rdquo;.</p>`;
+          return;
+        }
+
+        container.innerHTML = filtered.map(sec => `
+          <article class="p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+              <h3 class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">${escapeHtml(sec.title)}</h3>
+              <span class="px-2.5 py-0.5 rounded-lg text-[11px] font-bold ${sec.module === 4 ? 'bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-200' : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200'}">
+                Module ${sec.module} &bull; ${sec.page}
+              </span>
+            </div>
+            ${sec.content}
+          </article>
+        `).join('');
+      }
+
+      /* ===================================================================
+         12. DIAGNOSTIC REPORT MODAL
+         =================================================================== */
+      function openReportModal() {
+        const questions = getCurrentQuestions();
+        const stats = computeSetStats(state.activeSet, questions);
+        const setLabel = state.activeSet === 'MIX' ? 'Random Mix' : (state.activeSet === 'DRILL' ? 'Missed Items Drill' : `Set ${state.activeSet}`);
+        const pupGrade = getPUPGradeEquivalent(stats.pct);
+
+        const m4Pct = stats.mod4Max > 0 ? Math.max(0, Math.round((stats.mod4Score / stats.mod4Max) * 100)) : 0;
+        const m5Pct = stats.mod5Max > 0 ? Math.max(0, Math.round((stats.mod5Score / stats.mod5Max) * 100)) : 0;
+
+        // Gather missed topics in current set
+        const weakSections = [];
+        questions.forEach(q => {
+          const rec = getRecord(state.activeSet, q);
+          if (rec.checked && (rec.status === 'incorrect' || rec.status === 'partial')) {
+            weakSections.push(`Module ${q.module} (${q.page}): ${q.section}`);
+          }
+        });
+        const uniqueWeak = [...new Set(weakSections)];
+
+        document.getElementById('reportSubtitle').textContent = `${setLabel} • ${stats.checkedCount} of ${questions.length} questions checked`;
+
+        const body = document.getElementById('reportBody');
+        body.innerHTML = `
+          <!-- Top Summary Cards -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="p-3.5 rounded-2xl bg-teal-50 dark:bg-teal-950/50 border border-teal-200 dark:border-teal-800 text-center">
+              <p class="text-[11px] font-bold text-teal-700 dark:text-teal-300 uppercase">Overall Score</p>
+              <p class="text-xl font-black text-teal-900 dark:text-white mt-0.5">${stats.totalScore} / ${stats.totalMax}</p>
+              <p class="text-xs font-bold text-teal-600 dark:text-teal-400">${stats.pct}%</p>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-center">
+              <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase">PUP Est. Grade</p>
+              <p class="text-xl font-black text-slate-900 dark:text-white mt-0.5">${pupGrade.gpe}</p>
+              <p class="text-xs font-semibold text-slate-600 dark:text-slate-300">${pupGrade.desc}</p>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-center">
+              <p class="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 uppercase">Total XP</p>
+              <p class="text-xl font-black text-emerald-900 dark:text-white mt-0.5">${state.xp}</p>
+              <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">${getRankForXP(state.xp).icon} ${getRankForXP(state.xp).title}</p>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-center">
+              <p class="text-[11px] font-bold text-amber-700 dark:text-amber-300 uppercase">Best Streak</p>
+              <p class="text-xl font-black text-amber-900 dark:text-white mt-0.5">🔥 ${state.bestStreak}</p>
+              <p class="text-xs font-semibold text-amber-700 dark:text-amber-300">${state.reviewedCount} notes reviewed</p>
+            </div>
+          </div>
+
+          <!-- Module 4 vs Module 5 Mastery -->
+          <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white">Module Mastery Comparison</h3>
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span>Module 4: Water Management (pp. 43–54)</span>
+                <span>${stats.mod4Score} / ${stats.mod4Max} pts (${m4Pct}%)</span>
+              </div>
+              <div class="w-full h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                <div class="h-full bg-teal-500 rounded-full" style="width: ${m4Pct}%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span>Module 5: Wastewater Management (pp. 55–62)</span>
+                <span>${stats.mod5Score} / ${stats.mod5Max} pts (${m5Pct}%)</span>
+              </div>
+              <div class="w-full h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                <div class="h-full bg-indigo-500 rounded-full" style="width: ${m5Pct}%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Priority Topics to Revisit -->
+          <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white mb-2">📖 Priority Topics to Revisit</h3>
+            ${uniqueWeak.length > 0 ? `
+              <ul class="list-disc pl-5 space-y-1 text-xs sm:text-sm text-rose-700 dark:text-rose-300 font-medium">
+                ${uniqueWeak.map(t => `<li>${escapeHtml(t)}</li>`).join('')}
+              </ul>
+            ` : `
+              <p class="text-xs sm:text-sm text-emerald-700 dark:text-emerald-300 font-medium">No missed topics recorded in this set yet! Keep testing yourself across Sets A, B, C, and Random Mix.</p>
+            `}
+          </div>
+
+          <!-- Badges Gallery -->
+          <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white mb-3">🏅 Earned Badges (${state.badges.length} / ${BADGE_DEFS.length})</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              ${BADGE_DEFS.map(b => {
+                const earned = state.badges.includes(b.id);
+                return `
+                  <div class="p-2.5 rounded-xl border text-xs ${earned ? 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-50 grayscale'}">
+                    <div class="font-extrabold text-slate-900 dark:text-white">${b.icon} ${b.name}</div>
+                    <div class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">${b.desc}</div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- Action Footer -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <button id="btnLaunchDrillFromReport" type="button" class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-700 hover:to-orange-700 text-white text-xs sm:text-sm font-extrabold shadow-md transition active:scale-95">
+              🎯 Launch Missed Items Drill (${state.missedIds.length} items)
+            </button>
+            <button id="btnResetAllStats" type="button" class="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+              Reset All Saved Data
+            </button>
+          </div>
+        `;
+
+        document.getElementById('btnLaunchDrillFromReport').addEventListener('click', () => {
+          document.getElementById('reportModal').classList.add('hidden');
+          state.activeSet = 'DRILL';
+          state.currentIndex = 0;
+          saveState();
+          renderAll();
+        });
+
+        document.getElementById('btnResetAllStats').addEventListener('click', () => {
+          openConfirmModal(
+            'Reset All Saved Progress?',
+            'This will permanently clear your XP, badges, streaks, Missed Items Drill, and answers across all sets.',
+            () => {
+              const keepTheme = state.darkMode;
+              const keepSound = state.soundEnabled;
+              state = defaultState();
+              state.darkMode = keepTheme;
+              state.soundEnabled = keepSound;
+              saveState();
+              document.getElementById('reportModal').classList.add('hidden');
+              renderAll();
+              showToast('All progress reset cleanly.', 'info');
+            }
+          );
+        });
+
+        document.getElementById('reportModal').classList.remove('hidden');
+      }
+
+      /* ===================================================================
+         13. CUSTOM CONFIRM MODAL & MOBILE DRAWER CONTROLS
+         =================================================================== */
+      let confirmCallback = null;
+      function openConfirmModal(title, message, onConfirm) {
+        document.getElementById('confirmTitle').textContent = title;
+        document.getElementById('confirmMessage').textContent = message;
+        confirmCallback = onConfirm;
+        document.getElementById('confirmModal').classList.remove('hidden');
+      }
+      function closeConfirmModal() {
+        document.getElementById('confirmModal').classList.add('hidden');
+        confirmCallback = null;
+      }
+
+      function openMobileNav() {
+        document.getElementById('mobileNavBackdrop').classList.remove('hidden');
+        document.getElementById('navigatorSidebar').classList.remove('translate-x-full');
+      }
+      function closeMobileNav() {
+        document.getElementById('mobileNavBackdrop').classList.add('hidden');
+        document.getElementById('navigatorSidebar').classList.add('translate-x-full');
+      }
+
+      /* ===================================================================
+         14. EVENT LISTENERS WIRING
+         =================================================================== */
+      document.querySelectorAll('.set-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = btn.dataset.set;
+          state.activeSet = target;
+          state.currentIndex = 0;
+          if (target === 'MIX' && (!state.mixIds || state.mixIds.length !== 25)) {
+            generateRandomMix();
+          }
+          saveState();
+          renderAll();
+        });
+      });
+
+      document.getElementById('btnBackToSetA').addEventListener('click', () => {
+        state.activeSet = 'A';
+        state.currentIndex = 0;
+        saveState();
+        renderAll();
+      });
+
+      document.getElementById('btnPrev').addEventListener('click', () => {
+        if (state.currentIndex > 0) {
+          state.currentIndex -= 1;
+          saveState();
+          renderAll();
+        }
+      });
+
+      document.getElementById('btnNext').addEventListener('click', () => {
+        const total = getCurrentQuestions().length;
+        if (state.currentIndex < total - 1) {
+          state.currentIndex += 1;
+          saveState();
+          renderAll();
+        }
+      });
+
+      document.getElementById('btnCheck').addEventListener('click', evaluateCurrentQuestion);
+
+      document.getElementById('btnFlagQuestion').addEventListener('click', () => {
+        const questions = getCurrentQuestions();
+        if (!questions.length) return;
+        const q = questions[state.currentIndex];
+        const rec = getRecord(state.activeSet, q);
+        rec.flagged = !rec.flagged;
+        saveState();
+        renderAll();
+      });
+
+      document.getElementById('btnToggleTheme').addEventListener('click', () => {
+        state.darkMode = !state.darkMode;
+        saveState();
+        applyTheme();
+      });
+
+      document.getElementById('btnToggleSound').addEventListener('click', () => {
+        state.soundEnabled = !state.soundEnabled;
+        saveState();
+        applyTheme();
+        if (state.soundEnabled) playSound('review');
+      });
+
+      document.getElementById('btnOpenReviewer').addEventListener('click', () => openReviewerModal('all'));
+      document.getElementById('btnCloseReviewer').addEventListener('click', closeReviewerModal);
+      document.getElementById('reviewerSearch').addEventListener('input', renderReviewerContent);
+      document.querySelectorAll('.ref-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeRefTab = btn.dataset.refTab;
+          updateReviewerTabs();
+          renderReviewerContent();
+        });
+      });
+      document.getElementById('reviewerModal').addEventListener('click', (e) => {
+        if (e.target.id === 'reviewerModal') closeReviewerModal();
+      });
+
+      document.getElementById('btnOpenReport').addEventListener('click', () => {
+        closeMobileNav();
+        openReportModal();
+      });
+      document.getElementById('btnCloseReport').addEventListener('click', () => {
+        document.getElementById('reportModal').classList.add('hidden');
+      });
+      document.getElementById('reportModal').addEventListener('click', (e) => {
+        if (e.target.id === 'reportModal') document.getElementById('reportModal').classList.add('hidden');
+      });
+
+      document.getElementById('btnResetSet').addEventListener('click', () => {
+        const label = state.activeSet === 'MIX' ? 'Random Mix' : (state.activeSet === 'DRILL' ? 'Missed Items Drill attempts' : `Set ${state.activeSet}`);
+        openConfirmModal(
+          `Reset ${label}?`,
+          `This clears your answers in ${label} so you can retake it fresh. Your total XP, Rank, and Badges remain saved!`,
+          () => {
+            state.sets[state.activeSet] = {};
+            state.currentIndex = 0;
+            saveState();
+            renderAll();
+            closeMobileNav();
+            showToast(`${label} has been reset.`, 'info');
+          }
+        );
+      });
+
+      document.getElementById('btnConfirmCancel').addEventListener('click', closeConfirmModal);
+      document.getElementById('btnConfirmOk').addEventListener('click', () => {
+        if (typeof confirmCallback === 'function') confirmCallback();
+        closeConfirmModal();
+      });
+
+      document.getElementById('btnOpenMobileNav').addEventListener('click', openMobileNav);
+      document.getElementById('btnCloseMobileNav').addEventListener('click', closeMobileNav);
+      document.getElementById('mobileNavBackdrop').addEventListener('click', closeMobileNav);
+
+      // Keyboard navigation (Left/Right arrows when not typing in an input)
+      document.addEventListener('keydown', (e) => {
+        const tag = document.activeElement && document.activeElement.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+        const anyModalOpen =
+          !document.getElementById('reviewerModal').classList.contains('hidden') ||
+          !document.getElementById('reportModal').classList.contains('hidden') ||
+          !document.getElementById('confirmModal').classList.contains('hidden');
+        if (anyModalOpen) {
+          if (e.key === 'Escape') {
+            closeReviewerModal();
+            document.getElementById('reportModal').classList.add('hidden');
+            closeConfirmModal();
+          }
+          return;
+        }
+        if (e.key === 'ArrowLeft') document.getElementById('btnPrev').click();
+        if (e.key === 'ArrowRight') document.getElementById('btnNext').click();
+      });
+
+      // Initial render on load
+      renderAll();
+    })();
+  </script>
+</body>
+</html>
